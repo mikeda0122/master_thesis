@@ -1,2 +1,3 @@
 # master_thesis
-Learning coding through working on the basis of my master thesis, life-cycle model
+Basic life-cycle model with consumption and saving decision.
+Here, I used interpolation function from French replication.
