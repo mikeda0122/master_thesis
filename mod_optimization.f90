@@ -3,13 +3,13 @@ module mod_optimization
   use mod_parameter
   use mod_makegrids
   use mod_utility
-  use mod_interp_A
+  use mod_interp
 
   implicit none
 
 contains
 
-  subroutine optimization(age, A, V, Astate, mortality, Copt, Aopt, valopt)
+  subroutine optimization(age, A, V, Astate, Wstate, AIMEstate, mortality, Copt, Aopt, valopt)
 
     implicit none
 
@@ -17,8 +17,8 @@ contains
     integer(8), intent(in) :: age
     real(8), intent(in) :: A
     
-    real(8), intent(in) :: V(:,:)
-    real(8), intent(in) :: Astate(:) 
+    real(8), intent(in) :: V(:,:,:,:,:)
+    real(8), intent(in) :: Astate(:), Wstate(:), AIMEstate(:) 
     real(8), intent(in) :: mortality(:)
 
     real(8), intent(out) :: valopt, Copt, Aopt
@@ -46,7 +46,7 @@ contains
 
     Cmin = cfloor
     Cmax = cashonhand
-    
+
     do i = 1, Cnum
        Cstate(i) = Cmin + (i-1)*(Cmax-Cmin)/(Cnum-1)
     end do
@@ -65,16 +65,11 @@ contains
 
        bequestutils = beq(nextperiodassets, 1_1)
 
-       Evt = interp(age, nextperiodassets, V, Astate)
+       Evt = interp(age, nextperiodassets, 0.0_8, 0.0_8, V, Astate, Wstate, AIMEstate, Anum, Wnum, AIMEnum, 0_8)
+!       write(*,*) 'Evt=', Evt
 
-!       write(*,*) Evt
-       
        Evtpo = (1.0_8 - mortality(age-20+1))*Evt + mortality(age-20+1)*bequestutils
-!       write(*,*) mortality(age-20+1)
 
-!       write(*,*) Evtpo
-!       read*
-       
        val = utils + p_beta*Evtpo
        if (val > valopt) then
           Copt = C

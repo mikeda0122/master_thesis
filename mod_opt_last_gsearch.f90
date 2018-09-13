@@ -3,12 +3,13 @@ module mod_opt_last_gsearch
   use mod_parameter
   use mod_makegrids
   use mod_utility
+  use mod_interp
 
   implicit none
 
 contains
 
-  subroutine opt_last_gsearch(age, A, Astate, Copt, Aopt, valopt)
+  subroutine opt_last_gsearch(age, A, Astate, Wstate, AIMEstate, Copt, Aopt, valopt)
 
     implicit none
 
@@ -16,7 +17,7 @@ contains
     integer(8), intent(in) :: age
     real(8), intent(in) :: A
     
-    real(8), intent(in) :: Astate(:) 
+    real(8), intent(in) :: Astate(:), Wstate(:), AIMEstate(:) 
 
     real(8), intent(out) :: valopt, Copt, Aopt
 

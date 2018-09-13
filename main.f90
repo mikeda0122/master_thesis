@@ -7,11 +7,11 @@ program main
 
   implicit none
 
-  real(8) :: Astate(Anum)
+  real(8) :: Astate(Anum), Wstate(Wnum), AIMEstate(AIMEnum)
   integer(8) :: Ai
   integer(8) :: age
   real(8) :: Copt, Aopt, valopt
-  real(8) :: V(dieage-bornage+1, Anum)
+  real(8) :: V(dieage-bornage+1, AIMEnum, Wnum, Anum, Bnum)
 
   real(8) :: mortality(75)
 
@@ -31,7 +31,17 @@ program main
   
   close(10)
 
-  call make_A_1(Astate)  
+  call make_A_1(Astate)
+
+  Wstate(1) = 10.0_8
+  do j = 2, Wnum
+     Wstate(j) = 10.0_8 + Wstate(j-1)
+  end do
+  AIMEstate(1) = 10.0_8
+  do j = 2, AIMEnum
+     AIMEstate(j) = 10.0_8 + AIMEstate(j-1)
+  end do
+  
 
   p_gamh = 0.593194_8
   p_gamc = 3.51206_8
@@ -56,17 +66,19 @@ program main
   open(unit=15, file='valuesopt.csv')
   write(15,"(A)") "age, A, Aindex, Aopt, Copt, value"
   do Ai = 1, Anum
-     call opt_last_gsearch(95_8, Astate(Ai), Astate, Copt, Aopt, valopt)
-     V(95_8-bornage+1_8, Ai)=valopt
+     call opt_last_gsearch(95_8, Astate(Ai), Astate, Wstate, AIMEstate, Copt, Aopt, valopt)
+!     V(95-bornage+1, 1_8, 1_8, Ai, 1_8) = valopt
+!     write(*,*) 'V', valopt, 'Ai=', Ai
      write(15,'(i2, a, f10.2, a, i2, a, f10.2, a, f10.2, a, f18.10)') 95, ',', Astate(Ai), ',', Ai, ',', Aopt, ',', Copt, ',', valopt
   end do
 
   do age = dieage-1, 30, -1
      do Ai = 1, Anum
-        call optimization(age, Astate(Ai), V, Astate, mortality, Copt, Aopt, valopt)
-        V(age-bornage+1_8, Ai) = valopt
+        call optimization(age, Astate(Ai), V, Astate,Wstate, AIMEstate, mortality, Copt, Aopt, valopt)
+!        V(age-bornage+1, 1_8, 1_8, Ai, 1_8) = valopt
+       write(*,*) 'valopt=', valopt
+       read*
         write(15,'(i2, a, f10.2, a, i2, a, f10.2, a, f10.2, a, f18.10)') age, ',', Astate(Ai), ',', Ai, ',', Aopt, ',', Copt, ',', valopt
-     
      end do
   end do
   close(15)

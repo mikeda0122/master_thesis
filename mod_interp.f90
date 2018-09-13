@@ -103,7 +103,10 @@ contains
        print*, 'something wrong with interpolation'
        print*, Afrac, AIMEfrac
         read*
-    end if
+     end if
+
+!     write(*,*) 'AIMEidx=', AIMEidx, 'Widx=', Widx, 'age=', ageadj+1
+!     write(*,*) 'Bidx=', Bidx
 
     ! compute the weighted average
     if (Aidx == Anum) then
