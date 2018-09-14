@@ -104,7 +104,8 @@ module mod_parameter
     real(8) :: Hint    = 2000
 
     ! grids of A
-    integer(8) :: Anum    =   30
+    integer(8) :: Anum    =   300
+    integer(8) :: Amid    =   150 ! Amind = Anum/2
     integer(8) :: Anint    =    15
     real(8) :: Amax    = 600000
     real(8) :: Amin    = 0
@@ -124,7 +125,7 @@ module mod_parameter
 
     real(8) :: p_beta
     real(8) :: cfloor = 1.0_8
-    integer(8) :: Cnum = 200
+    integer(8) :: Cnum = 1000
 
     ! age parameters
     real(8) :: L = 5280  ! Time endowment: hours/year
