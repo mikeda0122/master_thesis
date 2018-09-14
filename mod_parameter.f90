@@ -105,8 +105,7 @@ module mod_parameter
 
     ! grids of A
     integer(8) :: Anum    =   300
-    integer(8) :: Amid    =   150 ! Amind = Anum/2
-    integer(8) :: Anint    =    15
+    integer(8) :: Anint    =   150
     real(8) :: Amax    = 600000
     real(8) :: Amin    = 0
     real(8) :: Aint    = 80000
