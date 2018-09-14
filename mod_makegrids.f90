@@ -21,7 +21,7 @@ contains
     real(8), intent(in) :: Cmax, Cmin
 
     real(8) :: Cint
-    integer(8) :: Cnint
+    integer(8) :: Cnint, i
 
     Cint=Cmin+((Cmax-Cmin)/2)
 
@@ -35,7 +35,7 @@ contains
     integer(8) :: i
     
     Hstate(1:Hnint) = [(Hmin+(i-1)*((Hint-Hmin)/(Hnint-1)),i=1,Hnint)]
-    Hstate(Hint+1:Hnum) = [(Hint+i*(Hmax-Hint)/Hnint, i=1,Hnint)]
+    Hstate(Hnint+1:Hnum) = [(Hint+i*(Hmax-Hint)/Hnint, i=1,Hnint)]
 
   end subroutine make_H
   
