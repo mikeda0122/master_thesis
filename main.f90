@@ -31,7 +31,7 @@ program main
   
   close(10)
 
-  call make_A_1(Astate)  
+  call make_A(Astate)  
 
   p_gamh = 0.593194_8
   p_gamc = 3.51206_8
