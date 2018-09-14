@@ -25,8 +25,8 @@ contains
 
     Cint=Cmin+((Cmax-Cmin)/2)
 
-    Cstate(1:Cnint) = [(Cmin+(i-1)*((Cint-Cmin)/(Cnint-1))), i=1, Cnint]
-    Cstate(Cnint+1:Cnum) = [(Cint+i*((Cmax-Cint)/Cnint)), i=1,Cint]
+    Cstate(1:Cnint) = [(Cmin+(i-1)*((Cint-Cmin)/(Cnint-1)), i=1, Cnint)]
+    Cstate(Cnint+1:Cnum) = [(Cint+i*((Cmax-Cint)/Cnint)), i=1,Cint)]
 
   end subroutine make_C
 
@@ -34,8 +34,8 @@ contains
     real(8), intent(inout) :: Hstate(:)
     integer(8) :: i
     
-    Hstate(1:Hnint) = [(Hmin+(i-1)*((Hint-Hmin)/(Hnint-1)),i=1,Hnint]
-    Hstate(Hint+1:Hnum) = [(Hint+i*(Hmax-Hint)/Hnint, i=1,Hnint]
+    Hstate(1:Hnint) = [(Hmin+(i-1)*((Hint-Hmin)/(Hnint-1)),i=1,Hnint)]
+    Hstate(Hint+1:Hnum) = [(Hint+i*(Hmax-Hint)/Hnint, i=1,Hnint)]
 
   end subroutine make_H
   
