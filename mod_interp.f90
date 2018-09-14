@@ -112,42 +112,51 @@ contains
     if (Aidx == Anum) then
        if (AIMEidx == AIMEnum) then
           if (Widx == Wnum) then
-             Vinterp = Afrac*AIMEfrac*Wfrac*V(ageadj+1, Aidx, Widx, AIMEidx, Bidx)
+             Vinterp = Afrac*AIMEfrac*Wfrac*V(ageadj+1, AIMEidx, Widx, Aidx, Bidx)
           else
-             Vinterp = Afrac*AIMEfrac*(Wfrac*V(ageadj+1, Aidx, Widx, AIMEidx, Bidx) + (1.0d0-Wfrac)*V(ageadj+1, Aidx, Widx+1, AIMEidx, Bidx))
+             Vinterp = Afrac*AIMEfrac*(Wfrac*V(ageadj+1, AIMEidx, Widx, Aidx, Bidx) + (1.0d0-Wfrac)*V(ageadj+1, AIMEidx, Widx+1, Aidx, Bidx))
           end if
        else
           if (Widx == Wnum) then
-             Vinterp = Afrac*AIMEfrac*Wfrac*V(ageadj+1, Aidx, Widx, AIMEidx, Bidx) &
-                  + Afrac*(1.0d0-AIMEfrac)*Wfrac*V(ageadj+1, Aidx, Widx, AIMEidx+1, Bidx)
+             Vinterp = Afrac*AIMEfrac*Wfrac*V(ageadj+1, AIMEidx, Widx, Aidx, Bidx) &
+                  + Afrac*(1.0d0-AIMEfrac)*Wfrac*V(ageadj+1, AIMEidx, Widx, Aidx+1, Bidx)
           else
-             Vinterp = Afrac*AIMEfrac*(Wfrac*V(ageadj+1, Aidx, Widx, AIMEidx, Bidx) + (1.0d0-Wfrac)*V(ageadj+1, Aidx, Widx+1, AIMEidx, Bidx)) &
-                  + Afrac*(1.0d0-AIMEfrac)*(Wfrac*V(ageadj+1, Aidx, Widx, AIMEidx+1, Bidx) + (1.0d0-Wfrac)*V(ageadj+1, Aidx, Widx+1, AIMEidx+1, Bidx))
+             Vinterp = Afrac*AIMEfrac*(Wfrac*V(ageadj+1, AIMEidx, Widx, Aidx, Bidx) + (1.0d0-Wfrac)*V(ageadj+1, AIMEidx, Widx+1, Aidx, Bidx)) &
+                  + Afrac*(1.0d0-AIMEfrac)*(Wfrac*V(ageadj+1, AIMEidx+1, Widx, Aidx, Bidx) + (1.0d0-Wfrac)*V(ageadj+1, AIMEidx+1, Widx+1, Aidx, Bidx))
           end if
        end if
     else
        if (AIMEidx == AIMEnum) then
           if (Widx == Wnum) then
-             Vinterp = Afrac*AIMEfrac*Wfrac*V(ageadj+1, Aidx, Widx, AIMEidx, Bidx) &
-                  +(1.0d0-Afrac)*AIMEfrac*Wfrac*V(ageadj+1, Aidx+1, Widx, AIMEidx, Bidx)
+             Vinterp = Afrac*AIMEfrac*Wfrac*V(ageadj+1, AIMEidx, Widx, Aidx, Bidx) &
+                  +(1.0d0-Afrac)*AIMEfrac*Wfrac*V(ageadj+1, AIMEidx, Widx, Aidx+1, Bidx)
           else
-             Vinterp = Afrac*AIMEfrac*(Wfrac*V(ageadj+1, Aidx, Widx, AIMEidx, Bidx) + (1-Wfrac)*V(ageadj+1, Aidx, Widx+1, AIMEidx, Bidx)) &
-                  +(1.0d0-Afrac)*AIMEfrac*(Wfrac*V(ageadj+1, Aidx+1, Widx, AIMEidx, Bidx) + (1-Wfrac)*V(ageadj+1, Aidx+1, Widx+1, AIMEidx, Bidx))
+             Vinterp = Afrac*AIMEfrac*(Wfrac*V(ageadj+1, AIMEidx, Widx, Aidx, Bidx) + (1-Wfrac)*V(ageadj+1, AIMEidx, Widx+1, Aidx, Bidx)) &
+                  +(1.0d0-Afrac)*AIMEfrac*(Wfrac*V(ageadj+1, AIMEidx, Widx, Aidx+1, Bidx) + (1-Wfrac)*V(ageadj+1, AIMEidx, Widx+1, Aidx+1, Bidx))
           end if
        else
           if (Widx == Wnum) then
-             Vinterp = Afrac*AIMEfrac*Wfrac*V(ageadj+1, Aidx, Widx, AIMEidx, Bidx) &
-                  + Afrac*(1.0d0-AIMEfrac)*Wfrac*V(ageadj+1, Aidx, Widx, AIMEidx+1, Bidx)&
-                  + (1.0d0-Afrac)*AIMEfrac*Wfrac*V(ageadj+1, Aidx+1, Widx, AIMEidx, Bidx)&
-                  + (1.0d0-Afrac)*(1.0d0-AIMEfrac)*Wfrac*V(ageadj+1, Aidx+1, Widx, AIMEidx+1, Bidx)
+             Vinterp = Afrac*AIMEfrac*Wfrac*V(ageadj+1, AIMEidx, Widx, Aidx, Bidx) &
+                  + Afrac*(1.0d0-AIMEfrac)*Wfrac*V(ageadj+1, AIMEidx+1, Widx, Aidx, Bidx)&
+                  + (1.0d0-Afrac)*AIMEfrac*Wfrac*V(ageadj+1, AIMEidx, Widx, Aidx+1, Bidx)&
+                  + (1.0d0-Afrac)*(1.0d0-AIMEfrac)*Wfrac*V(ageadj+1, AIMEidx+1, Widx, Aidx+1, Bidx)
           else
-             Vinterp = Afrac*AIMEfrac*(Wfrac*V(ageadj+1, Aidx, Widx, AIMEidx, Bidx) + (1.0d0-Wfrac)*V(ageadj+1, Aidx, Widx+1, AIMEidx, Bidx)) &
-                  + Afrac*(1.0d0-AIMEfrac)*(Wfrac*V(ageadj+1, Aidx, Widx, AIMEidx+1, Bidx) + (1.0d0-Wfrac)*V(ageadj+1, Aidx, Widx+1, AIMEidx+1, Bidx)) &
-                  + (1.0d0-Afrac)*AIMEfrac*(Wfrac*V(ageadj+1, Aidx+1, Widx, AIMEidx, Bidx) + (1.0d0-Wfrac)*V(ageadj+1, Aidx+1, Widx+1, AIMEidx, Bidx)) &
-                  + (1.0d0-Afrac)*(1.0d0-AIMEfrac)*(Wfrac*V(ageadj+1, Aidx+1, Widx, AIMEidx+1, Bidx) + (1.0d0-Wfrac)*V(ageadj+1, Aidx+1, Widx+1, AIMEidx+1, Bidx))
+             Vinterp = Afrac*AIMEfrac*(Wfrac*V(ageadj+1, AIMEidx, Widx, Aidx, Bidx) + (1.0d0-Wfrac)*V(ageadj+1, AIMEidx, Widx+1, Aidx, Bidx)) &
+                  + Afrac*(1.0d0-AIMEfrac)*(Wfrac*V(ageadj+1, AIMEidx+1, Widx, Aidx, Bidx) + (1.0d0-Wfrac)*V(ageadj+1, AIMEidx+1, Widx+1, Aidx, Bidx)) &
+                  + (1.0d0-Afrac)*AIMEfrac*(Wfrac*V(ageadj+1, AIMEidx, Widx, Aidx+1, Bidx) + (1.0d0-Wfrac)*V(ageadj+1, AIMEidx, Widx+1, Aidx+1, Bidx)) &
+                  + (1.0d0-Afrac)*(1.0d0-AIMEfrac)*(Wfrac*V(ageadj+1, AIMEidx+1, Widx, Aidx+1, Bidx) + (1.0d0-Wfrac)*V(ageadj+1, AIMEidx+1, Widx+1, Aidx+1, Bidx))
           end if
        end if
     end if
+    if (Vinterp > - 0.00001_8) then
+       write(*,*) 'Aidx=', Aidx, 'Widx=', Widx, 'AIMEidx=', AIMEidx , 'Bidx=', Bidx
+       write(*,*) 'age=', ageadj+1, 'V=', V(ageadj+1, Aidx, Widx, AIMEidx, Bidx)
+       write(*,*) 'A=', A
+       write(*,*) 'Afrac=', Afrac, 'AIMEfrac=', AIMEfrac, 'Wfrac=', Wfrac
+       write(*,*) 'V(66,1_8,1_8,Aidx,1_8)', V(66,1_8,1_8,Aidx,1_8)
+       read*
+    end if
+
     return
 
 end function
