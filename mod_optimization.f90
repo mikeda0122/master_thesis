@@ -9,7 +9,7 @@ module mod_optimization
 
 contains
 
-  subroutine optimization(age, A, V, Astate, mortality, Copt, Aopt, valopt)
+  subroutine optimization(age, A, V, Astate, Hstate, mortality, logwage, Copt, Hopt, Aopt, valopt)
 
     implicit none
 
@@ -18,71 +18,91 @@ contains
     real(8), intent(in) :: A
     
     real(8), intent(in) :: V(:,:)
-    real(8), intent(in) :: Astate(:) 
-    real(8), intent(in) :: mortality(:)
+    real(8), intent(in) :: Astate(:) , Hstate(:)
+    real(8), intent(in) :: mortality(:), logwage(:)
 
-    real(8), intent(out) :: valopt, Copt, Aopt
+    real(8), intent(out) :: valopt, Copt, Hopt, Aopt
 
     integer(1) :: flag
-    integer(8) :: Ci, i
+    integer(8) :: Ci, Hi, pi, i
 
     real(8) :: Cstate(Cnum), C, Cmin, Cmax
+    real(8) :: H
+    real(8) :: particip
     real(8) :: laborincome, income, cashonhand
     real(8) :: nextperiodassets, utils, bequestutils
     real(8) :: Evt, Evtpo, val
 
     valopt = -10000000000.0_8
 
-    if (age <=70) then
-       laborincome = 2000.0_8
-    else
-       laborincome = 0.0_8
-    end if
- 
-    income = laborincome
+    do pi = 1, 2
+          do Hi = 1, Hnum
+             if (pi == 1_8) then
+                particip = 1_1
+                H = Hstate(Hi)
+             else if (pi == 2_8) then
+                particip = 0_1
+                H = 0.0_8
+             else
+                print*, 'This is not what you want!!'
+                read*
+             end if
+             if (age <=70 .and. age < 95) then
+                laborincome = H*exp(logwage(age))
+             else if (30 <= age .and. age < 70) then
+                laborincome = 0.0_8
+             else
+                print*, 'This is not what you want!!'
+                read*
+             end if
 
-    cashonhand = income + A
-    flag = 0_1
+             income = laborincome
 
-    Cmin = cfloor
-    Cmax = cashonhand
-    
-    do i = 1, Cnum
-       Cstate(i) = Cmin + (i-1)*(Cmax-Cmin)/(Cnum-1)
-    end do
+             cashonhand = income + A
+             flag = 0_1
 
-    do Ci = 1, Cnum
+             Cmin = cfloor
+             Cmax = cashonhand
 
-       C = Cstate(Ci)
+             do i = 1, Cnum
+                Cstate(i) = Cmin + (i-1)*(Cmax-Cmin)/(Cnum-1)
+             end do
 
-       if (cashonhand - Astate(1) < cfloor) then
-          C = cfloor
-       end if
+             do Ci = 1, Cnum
 
-       nextperiodassets = cashonhand - C
+                C = Cstate(Ci)
 
-       utils = U(C, 0.0_8, 0_1, 0.0_8, 1_1)
+                if (cashonhand - Astate(1) < cfloor) then
+                   C = cfloor
+                end if
 
-       bequestutils = beq(nextperiodassets, 1_1)
+                nextperiodassets = cashonhand - C
 
-       Evt = interp(age, nextperiodassets, V, Astate)
+                utils = U(C, H, particip, 0.0_8, 1_1)
 
-!       write(*,*) Evt
-       
-       Evtpo = (1.0_8 - mortality(age-20+1))*Evt + mortality(age-20+1)*bequestutils
-!       write(*,*) mortality(age-20+1)
+                bequestutils = beq(nextperiodassets, 1_1)
 
-!       write(*,*) Evtpo
-!       read*
-       
-       val = utils + p_beta*Evtpo
-       if (val > valopt) then
-          Copt = C
-          Aopt = nextperiodassets
-          valopt = val
-       end if
+                Evt = interp(age, nextperiodassets, V, Astate)
 
-    end do !End Ci loop
+                !       write(*,*) Evt
+
+                Evtpo = (1.0_8 - mortality(age-20+1))*Evt + mortality(age-20+1)*bequestutils
+                !       write(*,*) mortality(age-20+1)
+
+                !       write(*,*) Evtpo
+                !       read*
+
+                val = utils + p_beta*Evtpo
+                if (val > valopt) then
+                   Copt = C
+                   Hopt = H
+                   Aopt = nextperiodassets
+                   valopt = val
+                end if
+
+             end do !End Ci loop
+          end do !End Hi loop
+       end do !end particip loop
 
   end subroutine optimization
 end module mod_optimization
