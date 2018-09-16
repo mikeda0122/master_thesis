@@ -1,0 +1,68 @@
+module mod_lifecycle_prof
+
+  implicit none
+
+contains
+
+  subroutine trac_lifecycle(A0, optC, optA, Astate, prof_C, prof_A)
+
+    implicit none
+
+    real(8), intent(in) :: A0
+    real(8), intent(in) :: V(:,:), optC(:,:), optA(:,:)
+    real(8), intent(in) :: Astate(:)
+
+    real(8), intent(out) :: prof_C(dieage-30+1), prof_A(diage-30+1)
+
+    real(8) :: prvA
+    
+    integer(8) :: age, i
+    integer(8) :: Aindex
+
+    prvA = A0
+
+    open(unit=20, file='decision_prof.csv')
+    write(20,"(A)") "age, A, C"
+    
+    do age = 30, dieage
+
+       call locate_Aindex(prvA, Astate, Aindex)
+
+       prvA = optA(dieage-age+1, Aindex)
+       prof_C(dieage-age+1) = optC(dieage-age+1, Aindex)
+       prof_A(dieage-age+1) = prvA
+
+       write(20, '(i2, a, f12.5, a, f12.5)') age, ',', prof_A(dieage-age+1),',', prof_C(dieage-age+1)
+    end do
+
+  end subroutine trac_lifecycle
+
+  subroutine locate_Aindex(prvA, Astate, Aindex)
+
+    implicit none
+
+    real(8), intent(in) :: prvA
+    real(8), intent(in) :: Astate(:)
+    real(8), intent(out) :: Aindex
+
+    if (prvA < (Astate(1)+Astate(2))/2) then
+       Aindex = 1_8
+    else if ((Astate(Anum-1)+Astate(Anum))/2 <= prvA) then
+       Aindex = Anum
+    else if ((Astate(1)+Astate(2))/2 <= prvA .and. prvA < (Astate(Anum-1)+Astate(Anum))/2)
+       do i = 2, Anum-1
+          if ((Astate(i-1)+Astate(i)/2) <= prvA .and. prvA < (Astate(i)+Astate(i+1))/2) then
+             Aindex = i
+             exit
+          end if
+       end do
+    else
+       print*, 'This is not what you want!!'
+       read*
+    end if
+
+  end subroutine locate_Aindex
+end module mod_lifecycle_prof
+
+
+    
