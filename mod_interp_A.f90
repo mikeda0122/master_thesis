@@ -16,7 +16,7 @@ contains
     real(8), intent(in) :: Astate(:)
     real(8), intent(out) :: Vinterp
 
-    ! adjusted age index: age - mappage + 1
+    ! adjusted age index: age - momage + 1
     integer(8) :: ageadj
 
     integer(8) :: Aidx
@@ -32,22 +32,28 @@ contains
         Aidx = Anum
     else if (A <= Astate(1)) then
        Aidx = 1
-    else
+    else if (Astate(1) < A .and. Astate(Anum) > A) then
        do Ai = 1, Anum-1
           if(A< Astate(Ai+1) .and. A >= Astate(Ai)) then
              Aidx = Ai
              exit
           end if
        end do
+    else
+       write(*,*) 'Something Wrong with Interpolation !!'
+       stop
     end if
 
     ! compute weights: Afrac, AIMEfrac, and Wfrac
-    if (Aidx == Anum) then
+    if (A >= Astate(Anum)) then
        Afrac = 1.0_8
-    else if (A < Astate(1)) then
-       Afrac = 1.0_8
-    else
+    else if (A <= Astate(1)) then
+       Afrac = 0.0_8
+    else if (Astate(1) < A .and. Astate(Anum) > A) then
        Afrac = (A - Astate(Aidx))/(Astate(Aidx+1) - Astate(Aidx))
+    else
+       write(*,*) 'Something wrong with interpolation!!'
+       stop
     end if
 
     if (Afrac > 1.0_8 .or. Afrac < 0.0_8) then
@@ -55,16 +61,27 @@ contains
        print*, Afrac
         read*
     end if
-     
-!    write(*,*) 'ageadj=', ageadj
-!    write(*,*) 'Aidx=', Aidx
-!    write(*,*) 'V=', V(ageadj+1, Aidx) 
     
     if (Aidx == Anum) then
        Vinterp = V(ageadj+1, Aidx)
+    else if (Aidx>=1_8 .and. Aidx < Anum) then
+       Vinterp = (1.0_8-Afrac)*V(ageadj+1, Aidx)+(Afrac)*V(ageadj+1, Aidx+1)
     else
-       Vinterp = Afrac*V(ageadj+1, Aidx)+(1.0_8-Afrac)*V(ageadj+1, Aidx+1)
+       write(*,*) 'something wrong with interpolation!!'
     end if
+
+!    if (age==94 .and. Vinterp < -10.0_8) then   
+!       write(*,*) 'ageadj=', ageadj
+!       write(*,*) 'A=', A
+!       write(*,*) 'Aidx=', Aidx
+!       write(*,*) 'Astate=', Astate(Aidx)
+!       write(*,*) 'Afrac=', Afrac
+!       write(*,*) 'V=', V(ageadj+1, Aidx)
+!       write(*,*) 'Vinterp=', Vinterp
+!       read*
+!    end if
+
+
     return
 
   end function interp
