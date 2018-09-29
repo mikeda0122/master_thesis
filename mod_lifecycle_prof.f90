@@ -1,5 +1,7 @@
 module mod_lifecycle_prof
 
+  use mod_parameter
+  
   implicit none
 
 contains
@@ -9,10 +11,10 @@ contains
     implicit none
 
     real(8), intent(in) :: A0
-    real(8), intent(in) :: V(:,:), optC(:,:), optA(:,:)
+    real(8), intent(in) :: optC(:,:), optA(:,:)
     real(8), intent(in) :: Astate(:)
 
-    real(8), intent(out) :: prof_C(dieage-30+1), prof_A(diage-30+1)
+    real(8), intent(out) :: prof_C(dieage-30+1), prof_A(dieage-30+1)
 
     real(8) :: prvA
     
@@ -28,11 +30,13 @@ contains
 
        call locate_Aindex(prvA, Astate, Aindex)
 
-       prvA = optA(dieage-age+1, Aindex)
-       prof_C(dieage-age+1) = optC(dieage-age+1, Aindex)
-       prof_A(dieage-age+1) = prvA
+       
+       prvA = optA(age-bornage+1, Aindex)
+       prof_C(age-bornage+1) = optC(age-bornage+1, Aindex)
+       prof_A(age-bornage+1) = prvA
 
-       write(20, '(i2, a, f12.5, a, f12.5)') age, ',', prof_A(dieage-age+1),',', prof_C(dieage-age+1)
+       
+       write(20, '(i2, a, f12.5, a, f12.5)') age, ',', prof_A(age-bornage+1),',', prof_C(age-bornage+1)
     end do
 
   end subroutine trac_lifecycle
@@ -43,15 +47,17 @@ contains
 
     real(8), intent(in) :: prvA
     real(8), intent(in) :: Astate(:)
-    real(8), intent(out) :: Aindex
+    integer(8), intent(out) :: Aindex
 
+    integer(8) :: i
+    
     if (prvA < (Astate(1)+Astate(2))/2) then
        Aindex = 1_8
     else if ((Astate(Anum-1)+Astate(Anum))/2 <= prvA) then
        Aindex = Anum
-    else if ((Astate(1)+Astate(2))/2 <= prvA .and. prvA < (Astate(Anum-1)+Astate(Anum))/2)
+    else if ((Astate(1)+Astate(2))/2 <= prvA .and. prvA < (Astate(Anum-1)+Astate(Anum))/2) then
        do i = 2, Anum-1
-          if ((Astate(i-1)+Astate(i)/2) <= prvA .and. prvA < (Astate(i)+Astate(i+1))/2) then
+          if ((Astate(i-1)+Astate(i))/2 <= prvA .and. prvA < (Astate(i)+Astate(i+1))/2) then
              Aindex = i
              exit
           end if

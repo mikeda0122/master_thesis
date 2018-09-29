@@ -33,7 +33,7 @@ contains
 
     valopt = -10000000000.0_8
 
-    if (age <=70) then
+    if (age <=60) then
        laborincome = 2000.0_8
     else
        laborincome = 0.0_8
@@ -76,6 +76,11 @@ contains
 !       read*
        
        val = utils + p_beta*Evtpo
+       if (age >= 90 .and. age <= 94 .and. A==Astate(5)) then
+          write(63,'(i2, a, f15.8, a, f15.8, a, f15.8, a, f15.8, a, f15.8, a, f15.8)') &
+               &age, ',', C, ',', nextperiodassets, ',', val, ',', utils, ',', Evtpo, ',', Evt
+       end if
+       
        if (val > valopt) then
           Copt = C
           Aopt = nextperiodassets

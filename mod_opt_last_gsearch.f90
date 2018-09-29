@@ -59,6 +59,11 @@ contains
        bequestutils = beq(nextperiodassets, 1_1)
 
        val = utils + p_beta*bequestutils
+       if (A == Astate(5)) then
+          write(63,'(i2, a, f15.8, a, f15.8, a, f15.8, a, f15.8, a, f15.8)') &
+               &age, ',', C, ',', nextperiodassets, ',', val, ',', utils, ',', bequestutils
+       end if
+       
        
        if (val > valopt) then
           Copt = C
