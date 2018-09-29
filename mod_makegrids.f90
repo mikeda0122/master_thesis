@@ -25,18 +25,20 @@ contains
 
     Cint=Cmin+((Cmax-Cmin)/2)
 
-    Cstate(1:Cnint) = [(Cmin+(i-1)*((Cint-Cmin)/(Cnint-1)), i=1, Cnint)]
-    Cstate(Cnint+1:Cnum) = [(Cint+i*((Cmax-Cint)/Cnint), i=1,Cint)]
+!    Cstate(1:Cnint) = [(Cmin+(i-1)*((Cint-Cmin)/(Cnint-1)), i=1, Cnint)]
+!    Cstate(Cnint+1:Cnum) = [(Cint+i*((Cmax-Cint)/Cnint), i=1,Cint)]
 
+    Cstate(1:Cnum) =[((Cmin+(i-1)*((Cmax-Cmin)/(Cnum-1))), i=1, Cnum)]
   end subroutine make_C
 
   subroutine make_H(Hstate)
     real(8), intent(inout) :: Hstate(:)
     integer(8) :: i
     
-    Hstate(1:Hnint) = [(Hmin+(i-1)*((Hint-Hmin)/(Hnint-1)),i=1,Hnint)]
-    Hstate(Hnint+1:Hnum) = [(Hint+i*(Hmax-Hint)/Hnint, i=1,Hnint)]
+!    Hstate(1:Hnint) = [(Hmin+(i-1)*((Hint-Hmin)/(Hnint-1)),i=1,Hnint)]
+!    Hstate(Hnint+1:Hnum) = [(Hint+i*(Hmax-Hint)/Hnint, i=1,Hnint)]
 
+    Hstate(1:Hnum) =[((Hmin+(i-1)*((Hmax-Hmin)/(Hnum-1))), i=1, Hnum)]
   end subroutine make_H
   
 end module mod_makegrids
