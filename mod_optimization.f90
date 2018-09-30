@@ -28,7 +28,7 @@ contains
 
     real(8) :: Cstate(Cnum), C, Cmin, Cmax
     real(8) :: H
-    real(8) :: particip
+    integer(1) :: particip
     real(8) :: laborincome, income, cashonhand
     real(8) :: nextperiodassets, utils, bequestutils
     real(8) :: Evt, Evtpo, val
@@ -47,10 +47,10 @@ contains
                 print*, 'This is not what you want!!'
                 read*
              end if
-             if (age <=70 .and. age < 95) then
-                laborincome = H*exp(logwage(age))
-             else if (30 <= age .and. age < 70) then
+             if (age>=70 .and. age < 95) then
                 laborincome = 0.0_8
+             else if (30 <= age .and. age < 70) then
+                laborincome = H*exp(logwage(age-momage+1))
              else
                 print*, 'This is not what you want!!'
                 read*
