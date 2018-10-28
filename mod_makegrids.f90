@@ -49,7 +49,7 @@ contains
     integer(8) :: i
 
     Wstate(1:Wnint) = [(Wmin+(i-1)*((Wint-Wmin)/(Wnint-1)), i=1,Wnint)]
-    Wstate(Wnint+1:Wnum) = [(Wint+i*(Wmax - Wint)/Wint, i=1, Wnint)]
+    Wstate(Wnint+1:Wnum) = [(Wint+i*(Wmax - Wint)/Wnint, i=1, Wnint)]
 
   end subroutine make_W
   
