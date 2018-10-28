@@ -55,6 +55,7 @@ contains
        nextperiodassets = cashonhand - C
 
        utils = U(C, 0.0_8, 0_1, M, 1_1)
+!       utils = log(C)
 
        bequestutils = beq(nextperiodassets, 1_1)
 

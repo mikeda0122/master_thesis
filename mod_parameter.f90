@@ -90,22 +90,22 @@ module mod_parameter
     real(8), parameter :: disabincometest = 3600.0_8 ! note that this is now a negative number
 
     !grids of W
-    integer(8) :: Wnum    = 10
-    integer(8) :: Wnint    = 5
+    integer(8) :: Wnum    = 20
+    integer(8) :: Wnint    = 10
     real(8) :: Wmax    = 60
     real(8) :: Wmin    = 3
     real(8) :: Wint    = 15
 
     !grids of H
-    integer(8) :: Hnum    = 6
-    integer(8) :: Hnint    = 3
+    integer(8) :: Hnum    = 20
+    integer(8) :: Hnint    = 10
     real(8) :: Hmax    = 4000
     real(8) :: Hmin    = 0
     real(8) :: Hint    = 2000
 
     ! grids of A
-    integer(8) :: Anum =   300
-    integer(8) :: Anint    =   150 
+    integer(8) :: Anum =   40
+    integer(8) :: Anint    =  20 
     real(8) :: Amax    = 600000
     real(8) :: Amin    = 0
     real(8) :: Aint    = 80000
@@ -124,17 +124,17 @@ module mod_parameter
 
     real(8) :: p_beta
     real(8) :: cfloor = 1.0_8
-    integer(8) :: Cnum = 1000
+    integer(8) :: Cnum = 100
 
     ! age parameters
     real(8) :: L = 5280  ! Time endowment: hours/year
-    integer(8) :: _TR = 66  ! Number of periods in the life
+    integer(8) :: TR = 66  ! Number of periods in the life
     integer(8) :: bornage = 30
     integer(8) :: momage = 30
     integer(8) :: momage2 = 69
-    integer(8) :: _trdat
+    integer(8) :: trdat
     integer(8) :: mashft
-    integer(8) :: _trdat2
+    integer(8) :: trdat2
     integer(8) :: retage = 70  ! Age by which everyone will exit the labor force
     ! integer(8) :: ageseq(_tr)
     integer(8) :: dieage = 95

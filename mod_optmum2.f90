@@ -3,13 +3,13 @@ module mod_optmum2
   use mod_parameter
   use mod_makegrids
   use mod_utility
-  use mod_interp_A
+  use mod_interp_A_W
 
   implicit none
 
 contains
 
-  subroutine optmum2(age, A, M, Vgood, Vbad, Astate, mortality_good, mortality_bad, good_to_bad, bad_to_bad, Copt, Aopt, valopt)
+  subroutine optmum2(age, A, M, Vgood, Vbad, Astate, Wstate, mortality_good, mortality_bad, good_to_bad, bad_to_bad, Copt, Aopt, valopt)
 
     implicit none
 
@@ -17,8 +17,8 @@ contains
     integer(8), intent(in) :: age
     real(8), intent(in) :: A
     real(8), intent(in) :: M
-    real(8), intent(in) :: Vgood(:,:), Vbad(:,:)
-    real(8), intent(in) :: Astate(:) 
+    real(8), intent(in) :: Vgood(:,:,:), Vbad(:,:,:)
+    real(8), intent(in) :: Astate(:), Wstate(:) 
     real(8), intent(in) :: mortality_good(:), mortality_bad(:), good_to_bad(:), bad_to_bad(:)
 
     real(8), intent(out) :: valopt, Copt, Aopt
@@ -70,18 +70,18 @@ contains
 
        bequestutils = beq(nextperiodassets, 1_1)
 
-       Evtgood = interp(age, nextperiodassets, Vgood, Astate)
-       Evtbad = interp(age, nextperiodassets, Vbad, Astate)
+       Evtgood = interp(age, nextperiodassets, 0.0_8, Vgood, Astate, Wstate)
+       Evtbad = interp(age, nextperiodassets, 0.0_8, Vbad, Astate, Wstate)
 !       write(*,*) Evt
 
        if (M==0.0_8) then
           
           Evtpo = ((1.0_8 - mortality_good(age-20+1))*((1.0_8-good_to_bad(age-20+1))*Evtgood &
-               & + good_to_bad(age-20+1)*Evtbad)+ mortality_good(age-20+1)*bequestutils)
+               & + good_to_bad(age-20+1)*Evtbad))+ mortality_good(age-20+1)*bequestutils
        else if (M==1.0_8) then
           
           Evtpo = ((1.0_8 - mortality_bad(age-20+1))*((1.0_8-bad_to_bad(age-20+1))*Evtgood &
-               & + bad_to_bad(age-20+1)*Evtbad)+ mortality_good(age-20+1)*bequestutils)
+               & + bad_to_bad(age-20+1)*Evtbad))+ mortality_good(age-20+1)*bequestutils
        else
           write(*,*) 'Health is neither 0 nor 1!!'
        end if

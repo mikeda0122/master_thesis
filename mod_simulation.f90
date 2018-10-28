@@ -6,17 +6,18 @@ module mod_simulation
 
 contains
 
-  subroutine simulation_mean(A_dist, M_dist, mortality_good, mortality_bad, good_to_bad, bad_to_bad, optC_good, optC_bad, optA_good,&
-       & optA_bad, optH_good, optH_bad, Astate, mean_prof_C_good, mean_prof_C_bad, mean_prof_A_good, mean_prof_A_bad, mean_prof_H_good, mean_prof_H_bad)
+  subroutine simulation_mean(A_dist, M_dist, W_dist, mortality_good, mortality_bad, good_to_bad, bad_to_bad, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, optC_good, optC_bad, optA_good,&
+       & optA_bad, optH_good, optH_bad, Astate, Wstate, mean_prof_C_good, mean_prof_C_bad, mean_prof_A_good, mean_prof_A_bad, mean_prof_H_good, mean_prof_H_bad)
 
     implicit none
         
-    real(8), intent(in) :: A_dist(:), M_dist(:)
+    real(8), intent(in) :: A_dist(:), M_dist(:), W_dist(:)
     real(8), intent(in) :: mortality_good(:), mortality_bad(:), good_to_bad(:), bad_to_bad(:)
-    real(8), intent(in) :: optC_good(:,:), optC_bad(:,:)
-    real(8), intent(in) :: optA_good(:,:),  optA_bad(:,:)
-    real(8), intent(in) :: optH_good(:,:),  optH_bad(:,:)
-    real(8), intent(in) :: Astate(:)
+    real(8), intent(in) :: hlogwage(:), ulogwage(:), hhgr(:), hugr(:), uhgr(:), uugr(:)  
+    real(8), intent(in) :: optC_good(:,:,:), optC_bad(:,:,:)
+    real(8), intent(in) :: optA_good(:,:,:),  optA_bad(:,:,:)
+    real(8), intent(in) :: optH_good(:,:,:),  optH_bad(:,:,:)
+    real(8), intent(in) :: Astate(:), Wstate(:)
     
     real(8), intent(out) :: mean_prof_C_good(:), mean_prof_C_bad(:)
     real(8), intent(out) :: mean_prof_A_good(:), mean_prof_A_bad(:)
@@ -25,6 +26,7 @@ contains
     real(8) :: prof_C(dieage-bornage+1), prof_A(dieage-bornage+1), prof_H(dieage-bornage+1)
     real(8) :: pop_good(dieage-bornage+1), pop_bad(dieage-bornage+1)
     real(8) :: health(dieage-bornage+1)
+    real(8), allocatable :: wshock_vector(:)
     integer(8) :: death_age
     integer(8) :: i, j, age, n
     
@@ -41,12 +43,19 @@ contains
        pop_bad(age) = 0.0_8
     end do
 
+    allocate(wshock_vector(n*(dieage-bornage+1_8)))
+    open(unit=47, file='wage_shock.csv')
+    do i = 1, n*(dieage-bornage+1_8)
+       read(47,'(f10.5)') wshock_vector(i)
+    end do
+
     open(unit=54, file='simulated_prof_ind.csv')
     write(54, "(A)") "id, age, M, C, A, H"
     
     do i = 1, n
 
-       call trac_lifecycle(A_dist(i), M_dist(i), i, n, mortality_good, mortality_bad, good_to_bad, bad_to_bad, optC_good, optC_bad, optA_good, optA_bad, optH_good, optH_bad, Astate, death_age, health, prof_C, prof_A, prof_H)
+       call trac_lifecycle(A_dist(i), M_dist(i), W_dist(i), i, n, mortality_good, mortality_bad, good_to_bad, bad_to_bad, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr,&
+           optC_good, optC_bad, optA_good, optA_bad, optH_good, optH_bad, Astate, Wstate, wshock_vector, death_age, health, prof_C, prof_A, prof_H)
 
        do age = 1, dieage-bornage+1
           if(health(age)==0.0_8) then             
@@ -88,31 +97,37 @@ contains
 
   end subroutine simulation_mean
   
-  subroutine trac_lifecycle(A0, M0, id, numind, mortality_good, mortality_bad, good_to_bad, bad_to_bad, optC_good, optC_bad, optA_good, optA_bad, optH_good, optH_bad, Astate, death_age, health, prof_C, prof_A, prof_H)
+  subroutine trac_lifecycle(A0, M0, W0, id, numind, mortality_good, mortality_bad, good_to_bad, bad_to_bad, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr,&
+       optC_good, optC_bad, optA_good, optA_bad, optH_good, optH_bad, Astate, Wstate, wshock_vector, death_age, health, prof_C, prof_A, prof_H)
 
     implicit none
 
-    real(8), intent(in) :: A0, M0
+    real(8), intent(in) :: A0, M0, W0
     integer(8), intent(in) :: id, numind
     real(8), intent(in) :: mortality_good(:), mortality_bad(:), good_to_bad(:), bad_to_bad(:)
-    real(8), intent(in) :: optC_good(:,:), optC_bad(:,:)
-    real(8), intent(in) :: optA_good(:,:), optA_bad(:,:)
-    real(8), intent(in) :: optH_good(:,:), optH_bad(:,:)
-    real(8), intent(in) :: Astate(:)
+    real(8), intent(in) :: hlogwage(:), ulogwage(:), hhgr(:), hugr(:), uhgr(:), uugr(:)
+    real(8), intent(in) :: optC_good(:,:,:), optC_bad(:,:,:)
+    real(8), intent(in) :: optA_good(:,:,:), optA_bad(:,:,:)
+    real(8), intent(in) :: optH_good(:,:,:), optH_bad(:,:,:)
+    real(8), intent(in) :: Astate(:), Wstate(:)
+    real(8), intent(in) :: wshock_vector(:)
 
     integer(8), intent(out) :: death_age
     real(8), intent(out) :: health(:)
     real(8), intent(out) :: prof_C(:), prof_A(:), prof_H(:)
 
-    real(8) :: death(dieage-bornage+1)
-    real(8) :: prvA
+    real(8) :: death(dieage-bornage+1), rwage(dieage-bornage+1)
+    real(8) :: dwage
+    real(8) :: prvA, prvW
     integer(8) :: age, i
-    integer(8) :: Aindex
+    integer(8) :: Aindex, Windex
 
     call health_draw(M0, good_to_bad, bad_to_bad, id, numind, health)    
     call death_draw(health, mortality_good, mortality_bad, id, numind, death)
+    call wage_draw(wshock_vector, id, rwage)
     
     prvA = A0
+    prvW = W0
     death_age = 30_8
 
     do age = bornage, dieage
@@ -123,63 +138,89 @@ contains
           prof_H(age-bornage+1) = 0.0_8          
        else if (death(age-bornage+1)==0.0_8) then
           
-          call locate_Aindex(prvA, Astate, Aindex)
+          call locate_index(prvA, Astate, Anum, Aindex)
+          call locate_index(prvW, Wstate, Wnum, Windex)
           
           if(health(age-bornage+1)==0.0) then
              
-             prvA = optA_good(age-bornage+1, Aindex)
-
-             prof_C(age-bornage+1) = optC_good(age-bornage+1, Aindex)
+             prvA = optA_good(age-bornage+1, Windex, Aindex)
+             
+             prof_C(age-bornage+1) = optC_good(age-bornage+1, Windex, Aindex)
              prof_A(age-bornage+1) = prvA
-             prof_H(age-bornage+1) = optH_good(age-bornage+1, Aindex)
+             prof_H(age-bornage+1) = optH_good(age-bornage+1, Windex, Aindex)
           else if (health(age-bornage+1)==1.0_8) then
 
-             prvA = optA_bad(age-bornage+1, Aindex)
+             prvA = optA_bad(age-bornage+1, Windex, Aindex)
 
-             prof_C(age-bornage+1) = optC_bad(age-bornage+1, Aindex)
+             prof_C(age-bornage+1) = optC_bad(age-bornage+1, Windex, Aindex)
              prof_A(age-bornage+1) = prvA
-             prof_H(age-bornage+1) = optH_bad(age-bornage+1, Aindex)
+             prof_H(age-bornage+1) = optH_bad(age-bornage+1, Windex, Aindex)
           else
              write(*,*) 'Something wrong with trac_lifecycle!!'
              read*
           end if
-          
+
+          if (age <= 68) then
+             if (health(age-bornage+1)==0.0_8 .and. health(age-bornage+1+1)==0.0_8) then
+                dwage = exp( (rhow*log(Wstate(Windex))) + ((1.0d0 - rhow)*hlogwage(age-bornage+1))) * (exp(hhgr(age-bornage+1)))
+             else if (health(age-bornage+1)==0.0_8 .and. health(age-bornage+1+1)==1.0_8) then
+                dwage = exp( (rhow*log(Wstate(Windex))) + ((1.0d0 - rhow)*hlogwage(age-bornage+1))) * (exp(hugr(age-bornage+1)))
+             else if (health(age-bornage+1)==1.0_8 .and. health(age-bornage+1+1)==0.0_8) then
+                dwage = exp( (rhow*log(Wstate(Windex))) + ((1.0d0 - rhow)*ulogwage(age-bornage+1))) * (exp(uhgr(age-bornage+1)))
+             else if (health(age-bornage+1)==1.0_8 .and. health(age-bornage+1+1)==1.0_8) then
+                dwage = exp( (rhow*log(Wstate(Windex))) + ((1.0d0 - rhow)*ulogwage(age-bornage+1))) * (exp(uugr(age-bornage+1)))
+             else
+                print*, 'This is not what you want!! health'
+                read*
+             end if
+
+             prvW = dwage + rwage(age-bornage+1)
+
+          else if (age<=dieage) then
+             prvW = Wstate(1)
+             
+          else
+             print*, 'This is not what you want! age'
+             read*
+          end if
+         
           death_age = death_age+1.0_8
        else
-          write(*,*) 'This is not what you want!'
+          write(*,*) 'This is not what you want! death'
           read*
        end if
     end do
     
   end subroutine trac_lifecycle
 
-  subroutine locate_Aindex(prvA, Astate, Aindex)
+  subroutine locate_index(prv, state, num, index)
 
     implicit none
 
-    real(8), intent(in) :: prvA
-    real(8), intent(in) :: Astate(:)
-    integer(8), intent(out) :: Aindex
+    real(8), intent(in) :: prv
+    real(8), intent(in) :: state(:)
+    integer(8), intent(in) :: num
+    integer(8), intent(out) :: index
 
     integer(8) :: i
     
-    if (prvA < (Astate(1)+Astate(2))/2) then
-       Aindex = 1_8
-    else if ((Astate(Anum-1)+Astate(Anum))/2 <= prvA) then
-       Aindex = Anum
-    else if ((Astate(1)+Astate(2))/2 <= prvA .and. prvA < (Astate(Anum-1)+Astate(Anum))/2) then
-       do i = 2, Anum-1
-          if ((Astate(i-1)+Astate(i))/2 <= prvA .and. prvA < (Astate(i)+Astate(i+1))/2) then
-             Aindex = i
+    if (prv < (state(1)+state(2))/2) then
+       index = 1_8
+    else if ((state(num-1)+state(num))/2 <= prv) then
+       index = num
+    else if ((state(1)+state(2))/2 <= prv .and. prv < (state(num-1)+state(num))/2) then
+       do i = 2, num-1
+          if ((state(i-1)+state(i))/2 <= prv .and. prv < (state(i)+state(i+1))/2) then
+             index = i
              exit
           end if
        end do
     else
-       print*, 'This is not what you want!!'
+       print*, 'This is not what you want!! index'
        read*
     end if
   
-  end subroutine locate_Aindex
+  end subroutine locate_index
 
   subroutine death_draw(health, mortality_good, mortality_bad, id, numind, death)
 
@@ -313,6 +354,25 @@ contains
     
   end subroutine health_draw
 
+  subroutine wage_draw(random, id, rwage)
+
+    implicit none
+
+    real(8), intent(in) :: random(:)
+    integer(8), intent(in) :: id
+    real(8), intent(out) :: rwage(:)
+
+    integer(8) :: i
+    
+    do i = 1, dieage-bornage+1
+
+       rwage(i) = random((id-1_8)*66+i)
+
+    end do
+
+  end subroutine wage_draw
+  
+    
 !  subroutine random_seed_clock()
 
 !    implicit none

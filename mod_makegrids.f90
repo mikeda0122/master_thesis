@@ -40,6 +40,18 @@ contains
 
     Hstate(1:Hnum) =[((Hmin+(i-1)*((Hmax-Hmin)/(Hnum-1))), i=1, Hnum)]
   end subroutine make_H
+
+  subroutine make_W(Wstate)
+
+    implicit none
+
+    real(8), intent(inout) :: Wstate(:)
+    integer(8) :: i
+
+    Wstate(1:Wnint) = [(Wmin+(i-1)*((Wint-Wmin)/(Wnint-1)), i=1,Wnint)]
+    Wstate(Wnint+1:Wnum) = [(Wint+i*(Wmax - Wint)/Wint, i=1, Wnint)]
+
+  end subroutine make_W
   
 end module mod_makegrids
   
