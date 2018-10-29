@@ -76,7 +76,7 @@ contains
 
     if (W >= Wstate(Wnum)) then
        Wfrac = 1.0d0
-    else if (W < Wstate(1)) then
+    else if (W <= Wstate(1)) then
        Wfrac = 0.0d0
     else if (Wstate(1) < W .and. Wstate(Wnum) > W) then
        Wfrac = (W - Wstate(Widx))/(Wstate(Widx+1) - Wstate(Widx))
