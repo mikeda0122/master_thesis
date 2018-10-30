@@ -2,24 +2,25 @@ module mod_optmum0
 
   use mod_parameter
   use mod_makegrids
+  use mod_computeaime
   use mod_utility
-  use mod_interp_A_W
+  use mod_interp
   use mod_integral
 
   implicit none
 
 contains
 
-  subroutine optmum0(age, A, W, M, Vgood, Vbad, Astate, Hstate, Wstate, mortality_good, mortality_bad, good_to_bad, bad_to_bad, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, Copt, Hopt, Aopt, valopt)
+  subroutine optmum0(age, A, AIME, W, M, Vgood, Vbad, Astate, AIMEstate, Wstate, Hstate, mortality_good, mortality_bad, good_to_bad, bad_to_bad, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, Copt, Hopt, Aopt, valopt)
 
     implicit none
 
     
     integer(8), intent(in) :: age
-    real(8), intent(in) :: A, W
+    real(8), intent(in) :: A, AIME, W
     real(8), intent(in) :: M
-    real(8), intent(in) :: Vgood(:,:,:), Vbad(:,:,:)
-    real(8), intent(in) :: Astate(:) , Hstate(:), Wstate(:)
+    real(8), intent(in) :: Vgood(:,:,:,:), Vbad(:,:,:,:)
+    real(8), intent(in) :: Astate(:) , AIMEstate(:), Hstate(:), Wstate(:)
     real(8), intent(in) :: mortality_good(:), mortality_bad(:), good_to_bad(:), bad_to_bad(:)
     real(8), intent(in) :: hlogwage(:), ulogwage(:), hhgr(:), hugr(:), uhgr(:), uugr(:)
 
@@ -30,13 +31,15 @@ contains
 
     real(8) :: Cstate(Cnum), C, Cmin, Cmax
     real(8) :: H
+    integer(8) :: currentB
     integer(1) :: particip
     real(8) :: laborincome, income, cashonhand
-    real(8) :: nextperiodassets, utils, bequestutils
+    real(8) :: nextperiodassets, nextperiodAIME, utils, bequestutils
     real(8) :: wtpogood, wtpobad
     real(8) :: Evtgood, Evtbad, Evtpo, val
 
     valopt = -10000000000.0_8
+    currentB = 0_8
 
     do pi = 1, 2
           do Hi = 1, Hnum
@@ -50,22 +53,18 @@ contains
                 print*, 'This is not what you want!!'
                 read*
              end if
-             if (age>=70 .and. age < 95) then
-                laborincome = 0.0_8
-             else if (30 <= age .and. age < 70) then
-                if (M==0.0_8) then
-                   laborincome = H*W
-                else if (M==1.0_8) then
-                   laborincome = H*W
-                else
-                   write(*,*) 'Health is neither 0 nor 1!!'
-                end if
+
+             if (M==0.0_8) then
+                laborincome = H*W
+             else if (M==1.0_8) then
+                laborincome = H*W
              else
-                print*, 'This is not what you want!!'
-                read*
+                write(*,*) 'Health is neither 0 nor 1!!'
              end if
 
              income = laborincome
+
+             call computeAIME(AIME, laborincome, age, currentB, nextperiodAIME)
 
              cashonhand = income + A
              flag = 0_1
@@ -93,8 +92,8 @@ contains
                 bequestutils = beq(nextperiodassets, 1_1)
 
                 call nextwage(age, W, M, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, wtpogood, wtpobad)
-                Evtgood = integral(age, nextperiodassets, wtpogood, Vgood, Astate, Wstate)
-                Evtbad = integral(age, nextperiodassets, wtpobad, Vbad, Astate, Wstate)
+                Evtgood = integral(age, nextperiodassets, wtpogood, nextperiodAIME, Vgood, Astate, Wstate, AIMEstate)
+                Evtbad = integral(age, nextperiodassets, wtpobad, nextperiodAIME, Vbad, Astate, Wstate, AIMEstate)
                 if(M == 0.0_8) then
                    Evtpo = ((1.0_8-mortality_good(age-20+1))*((1.0_8-good_to_bad(age-20+1))*Evtgood &
                         + good_to_bad(age-20+1)*Evtbad) + mortality_good(age-20+1)*bequestutils)

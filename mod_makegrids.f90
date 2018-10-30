@@ -52,6 +52,18 @@ contains
     Wstate(Wnint+1:Wnum) = [(Wint+i*(Wmax - Wint)/Wnint, i=1, Wnint)]
 
   end subroutine make_W
-  
+
+  subroutine make_AIME(AIMEstate)
+
+    implicit none
+
+    real(8), intent(inout) :: AIMEstate(:)
+    integer(8) :: i
+
+    AIMEstate(1:AIMEnint) = [(AIMEmin+(i-1)*((AIMEint-AIMEmin)/(AIMEnint-1)), i=1,AIMEnint)]
+    AIMEstate(AIMEnint+1:AIMEnum) = [(AIMEint+i*(AIMEmax - AIMEint)/AIMEnint, i=1, AIMEnint)]
+
+  end subroutine make_AIME
+
 end module mod_makegrids
   

@@ -2,23 +2,24 @@ module mod_optmum2
 
   use mod_parameter
   use mod_makegrids
+  use mod_computePIA
   use mod_utility
-  use mod_interp_A_W
+  use mod_interp
 
   implicit none
 
 contains
 
-  subroutine optmum2(age, A, M, Vgood, Vbad, Astate, Wstate, mortality_good, mortality_bad, good_to_bad, bad_to_bad, Copt, Aopt, valopt)
+  subroutine optmum2(age, A, AIME, M, Vgood, Vbad, Astate, Wstate, AIMEstate, mortality_good, mortality_bad, good_to_bad, bad_to_bad, Copt, Aopt, valopt)
 
     implicit none
 
     
     integer(8), intent(in) :: age
-    real(8), intent(in) :: A
+    real(8), intent(in) :: A, AIME
     real(8), intent(in) :: M
-    real(8), intent(in) :: Vgood(:,:,:), Vbad(:,:,:)
-    real(8), intent(in) :: Astate(:), Wstate(:) 
+    real(8), intent(in) :: Vgood(:,:,:,:), Vbad(:,:,:,:)
+    real(8), intent(in) :: Astate(:), Wstate(:), AIMEstate(:)
     real(8), intent(in) :: mortality_good(:), mortality_bad(:), good_to_bad(:), bad_to_bad(:)
 
     real(8), intent(out) :: valopt, Copt, Aopt
@@ -26,16 +27,18 @@ contains
     integer(1) :: flag
     integer(8) :: Ci, i
 
+    real(8) :: PIA, ss, income, cashonhand
     real(8) :: Cstate(Cnum), C, Cmin, Cmax
-    real(8) :: income, cashonhand
     real(8) :: nextperiodassets, utils, bequestutils
     real(8) :: Evtgood, Evtbad, Evtpo, val
 
     valopt = -10000000000.0_8
- 
+
+    PIA = computePIA(AIME)
+    ss = PIA
     income = 0.0_8
 
-    cashonhand = income + A
+    cashonhand = ss + income + A
 
     Cmin = cfloor
     Cmax = cashonhand
@@ -70,8 +73,8 @@ contains
 
        bequestutils = beq(nextperiodassets, 1_1)
 
-       Evtgood = interp(age, nextperiodassets, 0.0_8, Vgood, Astate, Wstate)
-       Evtbad = interp(age, nextperiodassets, 0.0_8, Vbad, Astate, Wstate)
+       Evtgood = interp(age, nextperiodassets, 0.0_8, AIME, Vgood, Astate, Wstate, AIMEstate)
+       Evtbad = interp(age, nextperiodassets, 0.0_8, AIME, Vbad, Astate, Wstate, AIMEstate)
 !       write(*,*) Evt
 
        if (M==0.0_8) then

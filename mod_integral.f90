@@ -1,7 +1,7 @@
 module mod_integral
   
   use mod_parameter
-  use mod_interp_A_W
+  use mod_interp
   use mod_profwage
 
   implicit none
@@ -30,10 +30,10 @@ contains
 !nodenum==5;
 !      nodes=intmat5[.,1]; wgts=intmat5[.,2]; !since it is symmetric, intmat5 actually provides 5 nodes and weights
 
-function integral(age, nextperiodassets, W, V, Astate, Wstate) result(vint)
+function integral(age, nextperiodassets, W, nextperiodAIME, V, Astate, Wstate, AIMEstate) result(vint)
       implicit none
       integer(8), intent(in) :: age
-      real(8), intent(in) :: nextperiodassets, W, V(:,:,:), Astate(:), Wstate(:)
+      real(8), intent(in) :: nextperiodassets, W, nextperiodAIME, V(:,:,:,:), Astate(:), Wstate(:), AIMEstate(:)
       real(8), intent(out):: vint
       real(8) :: ev, wage
       integer :: i
@@ -43,7 +43,7 @@ function integral(age, nextperiodassets, W, V, Astate, Wstate) result(vint)
     vint=0.0_8
     do i = 1, wnodenum
         wage= W*wnodes(i)  !wage = (sqrt(2) * sigma * wnodes(i) + mu) ,where (mu, sigma^2) = (0, 0.0141)
-        ev=interp(age, nextperiodassets, wage, V, Astate, Wstate)
+        ev=interp(age, nextperiodassets, wage, nextperiodAIME, V, Astate, Wstate, AIMEstate)
         vint=vint+ev*wwgts(i)
     enddo
     vint = vint/sqrt(pi)

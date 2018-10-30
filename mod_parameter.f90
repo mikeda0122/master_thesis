@@ -90,22 +90,22 @@ module mod_parameter
     real(8), parameter :: disabincometest = 3600.0_8 ! note that this is now a negative number
 
     !grids of W
-    integer(8) :: Wnum    = 20
-    integer(8) :: Wnint    = 10
+    integer(8) :: Wnum    = 10
+    integer(8) :: Wnint    = 5
     real(8) :: Wmax    = 60
     real(8) :: Wmin    = 3
     real(8) :: Wint    = 15
 
     !grids of H
-    integer(8) :: Hnum    = 20
-    integer(8) :: Hnint    = 10
+    integer(8) :: Hnum    = 10
+    integer(8) :: Hnint    = 5
     real(8) :: Hmax    = 4000
     real(8) :: Hmin    = 0
     real(8) :: Hint    = 2000
 
     ! grids of A
-    integer(8) :: Anum =   40
-    integer(8) :: Anint    =  20 
+    integer(8) :: Anum =   10
+    integer(8) :: Anint    = 5  
     real(8) :: Amax    = 600000
     real(8) :: Amin    = 0
     real(8) :: Aint    = 80000

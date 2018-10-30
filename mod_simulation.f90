@@ -1,23 +1,24 @@
 module mod_simulation
 
   use mod_parameter
+  use mod_computeaime
   
   implicit none
 
 contains
 
-  subroutine simulation_mean(A_dist, M_dist, W_dist, mortality_good, mortality_bad, good_to_bad, bad_to_bad, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, optC_good, optC_bad, optA_good,&
-       & optA_bad, optH_good, optH_bad, Astate, Wstate, mean_prof_C_good, mean_prof_C_bad, mean_prof_A_good, mean_prof_A_bad, mean_prof_H_good, mean_prof_H_bad)
+  subroutine simulation_mean(A_dist, M_dist, W_dist, AIME_dist, mortality_good, mortality_bad, good_to_bad, bad_to_bad, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, optC_good, optC_bad, optA_good,&
+       & optA_bad, optH_good, optH_bad, Astate, Wstate, AIMEstate, mean_prof_C_good, mean_prof_C_bad, mean_prof_A_good, mean_prof_A_bad, mean_prof_H_good, mean_prof_H_bad)
 
     implicit none
         
-    real(8), intent(in) :: A_dist(:), M_dist(:), W_dist(:)
+    real(8), intent(in) :: A_dist(:), M_dist(:), W_dist(:), AIME_dist(:)
     real(8), intent(in) :: mortality_good(:), mortality_bad(:), good_to_bad(:), bad_to_bad(:)
     real(8), intent(in) :: hlogwage(:), ulogwage(:), hhgr(:), hugr(:), uhgr(:), uugr(:)  
-    real(8), intent(in) :: optC_good(:,:,:), optC_bad(:,:,:)
-    real(8), intent(in) :: optA_good(:,:,:),  optA_bad(:,:,:)
-    real(8), intent(in) :: optH_good(:,:,:),  optH_bad(:,:,:)
-    real(8), intent(in) :: Astate(:), Wstate(:)
+    real(8), intent(in) :: optC_good(:,:,:,:), optC_bad(:,:,:,:)
+    real(8), intent(in) :: optA_good(:,:,:,:),  optA_bad(:,:,:,:)
+    real(8), intent(in) :: optH_good(:,:,:,:),  optH_bad(:,:,:,:)
+    real(8), intent(in) :: Astate(:), Wstate(:), AIMEstate(:)
     
     real(8), intent(out) :: mean_prof_C_good(:), mean_prof_C_bad(:)
     real(8), intent(out) :: mean_prof_A_good(:), mean_prof_A_bad(:)
@@ -54,8 +55,8 @@ contains
     
     do i = 1, n
 
-       call trac_lifecycle(A_dist(i), M_dist(i), W_dist(i), i, n, mortality_good, mortality_bad, good_to_bad, bad_to_bad, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr,&
-           optC_good, optC_bad, optA_good, optA_bad, optH_good, optH_bad, Astate, Wstate, wshock_vector, death_age, health, prof_C, prof_A, prof_H)
+       call trac_lifecycle(A_dist(i), M_dist(i), W_dist(i), AIME_dist(i), i, n, mortality_good, mortality_bad, good_to_bad, bad_to_bad, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr,&
+           optC_good, optC_bad, optA_good, optA_bad, optH_good, optH_bad, Astate, Wstate, AIMEstate, wshock_vector, death_age, health, prof_C, prof_A, prof_H)
 
        do age = 1, dieage-bornage+1
           if(health(age)==0.0_8) then             
@@ -97,19 +98,19 @@ contains
 
   end subroutine simulation_mean
   
-  subroutine trac_lifecycle(A0, M0, W0, id, numind, mortality_good, mortality_bad, good_to_bad, bad_to_bad, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr,&
-       optC_good, optC_bad, optA_good, optA_bad, optH_good, optH_bad, Astate, Wstate, wshock_vector, death_age, health, prof_C, prof_A, prof_H)
+  subroutine trac_lifecycle(A0, M0, W0, AIME0, id, numind, mortality_good, mortality_bad, good_to_bad, bad_to_bad, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr,&
+       optC_good, optC_bad, optA_good, optA_bad, optH_good, optH_bad, Astate, Wstate, AIMEstate, wshock_vector, death_age, health, prof_C, prof_A, prof_H)
 
     implicit none
 
-    real(8), intent(in) :: A0, M0, W0
+    real(8), intent(in) :: A0, M0, W0, AIME0
     integer(8), intent(in) :: id, numind
     real(8), intent(in) :: mortality_good(:), mortality_bad(:), good_to_bad(:), bad_to_bad(:)
     real(8), intent(in) :: hlogwage(:), ulogwage(:), hhgr(:), hugr(:), uhgr(:), uugr(:)
-    real(8), intent(in) :: optC_good(:,:,:), optC_bad(:,:,:)
-    real(8), intent(in) :: optA_good(:,:,:), optA_bad(:,:,:)
-    real(8), intent(in) :: optH_good(:,:,:), optH_bad(:,:,:)
-    real(8), intent(in) :: Astate(:), Wstate(:)
+    real(8), intent(in) :: optC_good(:,:,:,:), optC_bad(:,:,:,:)
+    real(8), intent(in) :: optA_good(:,:,:,:), optA_bad(:,:,:,:)
+    real(8), intent(in) :: optH_good(:,:,:,:), optH_bad(:,:,:,:)
+    real(8), intent(in) :: Astate(:), Wstate(:), AIMEstate(:)
     real(8), intent(in) :: wshock_vector(:)
 
     integer(8), intent(out) :: death_age
@@ -117,10 +118,10 @@ contains
     real(8), intent(out) :: prof_C(:), prof_A(:), prof_H(:)
 
     real(8) :: death(dieage-bornage+1), rwage(dieage-bornage+1)
-    real(8) :: dwage
-    real(8) :: prvA, prvW
+    real(8) :: dwage, income, laborincome
+    real(8) :: prvA, prvW, prvAIME
     integer(8) :: age, i
-    integer(8) :: Aindex, Windex
+    integer(8) :: Aindex, Windex, AIMEindex
 
     call health_draw(M0, good_to_bad, bad_to_bad, id, numind, health)    
     call death_draw(health, mortality_good, mortality_bad, id, numind, death)
@@ -128,38 +129,41 @@ contains
     
     prvA = A0
     prvW = W0
+    prvAIME = AIME0
     death_age = 30_8
 
     do age = bornage, dieage
-       if (death(age-bornage+1)==1.0_8) then
+       if (death(age-bornage+1)==1.0_8) then !the case where this individual has been already dead.
           prvA = 0.0_8
           prof_C(age-bornage+1) = 0.0_8
           prof_A(age-bornage+1) = 0.0_8
           prof_H(age-bornage+1) = 0.0_8          
        else if (death(age-bornage+1)==0.0_8) then
-          
+
+          !locate individual's state in terms of A, W and AIME grids
           call locate_index(prvA, Astate, Anum, Aindex)
           call locate_index(prvW, Wstate, Wnum, Windex)
-          
+          call locate_index(prvAIME, AIMEstate, AIMEnum, AIMEindex)
+
+          !Optimal choice and next period's assets. 
           if(health(age-bornage+1)==0.0) then
+             prvA = optA_good(age-bornage+1, AIMEindex, Windex, Aindex)
              
-             prvA = optA_good(age-bornage+1, Windex, Aindex)
-             
-             prof_C(age-bornage+1) = optC_good(age-bornage+1, Windex, Aindex)
+             prof_C(age-bornage+1) = optC_good(age-bornage+1, AIMEindex, Windex, Aindex)
              prof_A(age-bornage+1) = prvA
-             prof_H(age-bornage+1) = optH_good(age-bornage+1, Windex, Aindex)
+             prof_H(age-bornage+1) = optH_good(age-bornage+1, AIMEindex, Windex, Aindex)
           else if (health(age-bornage+1)==1.0_8) then
-
-             prvA = optA_bad(age-bornage+1, Windex, Aindex)
-
-             prof_C(age-bornage+1) = optC_bad(age-bornage+1, Windex, Aindex)
+             prvA = optA_bad(age-bornage+1, AIMEindex, Windex, Aindex)
+             
+             prof_C(age-bornage+1) = optC_bad(age-bornage+1, AIMEindex, Windex, Aindex)
              prof_A(age-bornage+1) = prvA
-             prof_H(age-bornage+1) = optH_bad(age-bornage+1, Windex, Aindex)
+             prof_H(age-bornage+1) = optH_bad(age-bornage+1, AIMEindex, Windex, Aindex)
           else
              write(*,*) 'Something wrong with trac_lifecycle!!'
              read*
           end if
 
+          !compute next period's wage
           if (age <= 68) then
              if (health(age-bornage+1)==0.0_8 .and. health(age-bornage+1+1)==0.0_8) then
                 dwage = exp( (rhow*log(Wstate(Windex))) + ((1.0d0 - rhow)*hlogwage(age-bornage+1))) * (exp(hhgr(age-bornage+1)))
@@ -173,17 +177,37 @@ contains
                 print*, 'This is not what you want!! health'
                 read*
              end if
-
              prvW = dwage + rwage(age-bornage+1)
-
           else if (age<=dieage) then
              prvW = Wstate(1)
-             
           else
              print*, 'This is not what you want! age'
              read*
           end if
-         
+
+          !compute next period's AIME
+          if (age<=61) then
+             laborincome = Wstate(Windex)*prof_H(age-bornage+1)
+             call computeAIME(AIMEstate(AIMEindex), laborincome, age, 0_8, prvAIME)
+          else if (age<=69) then
+             laborincome = Wstate(Windex)*prof_H(age-bornage+1)
+             if (age < 65) then
+                call computeAIME(AIMEstate(AIMEindex), laborincome, age, 0_8, prvAIME)
+             else if (age >= 65) then
+                prvAIME = AIMEstate(AIMEindex)
+             else
+                write(*,*) 'something wrong with ss application!! sim AIME'
+                read*
+             end if
+          else if (age<=94) then
+             prvAIME = AIMEstate(AIMEindex)
+          else if (age==95) then
+             prvAIME = AIMEstate(1)
+          else
+             print*, 'something is wrong!! sim AIME'
+          end if
+          
+             
           death_age = death_age+1.0_8
        else
           write(*,*) 'This is not what you want! death'
