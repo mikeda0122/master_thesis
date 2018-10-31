@@ -59,18 +59,20 @@ contains
            optC_good, optC_bad, optA_good, optA_bad, optH_good, optH_bad, Astate, Wstate, AIMEstate, wshock_vector, death_age, health, prof_C, prof_A, prof_H)
 
        do age = 1, dieage-bornage+1
-          if(health(age)==0.0_8) then             
-             mean_prof_C_good(age) = mean_prof_C_good(age) + prof_C(age)
-             mean_prof_A_good(age) = mean_prof_A_good(age) + prof_A(age)
-             mean_prof_H_good(age) = mean_prof_H_good(age) + prof_H(age)
+          if (age<death_age) then 
+              if(health(age)==0.0_8) then             
+                 mean_prof_C_good(age) = mean_prof_C_good(age) + prof_C(age)
+                 mean_prof_A_good(age) = mean_prof_A_good(age) + prof_A(age)
+                 mean_prof_H_good(age) = mean_prof_H_good(age) + prof_H(age)
 
-             pop_good(age) = pop_good(age) + 1
-          else if (health(age)==1.0_8) then
-             mean_prof_C_bad(age) = mean_prof_C_bad(age) + prof_C(age)
-             mean_prof_A_bad(age) = mean_prof_A_bad(age) + prof_A(age)
-             mean_prof_H_bad(age) = mean_prof_H_bad(age) + prof_H(age)
+                 pop_good(age) = pop_good(age) + 1
+              else if (health(age)==1.0_8) then
+                 mean_prof_C_bad(age) = mean_prof_C_bad(age) + prof_C(age)
+                 mean_prof_A_bad(age) = mean_prof_A_bad(age) + prof_A(age)
+                 mean_prof_H_bad(age) = mean_prof_H_bad(age) + prof_H(age)
 
-             pop_bad(age) = pop_bad(age) + 1             
+                 pop_bad(age) = pop_bad(age) + 1             
+              end if
           end if
           
           write(54,'(i4, a, i2, a, f4.2, a, f18.5, a, f18.5, a, f18.5)') i, ',', age+bornage-1, ',', health(age), ',', prof_C(age), ',',  prof_A(age), ',', prof_H(age)
