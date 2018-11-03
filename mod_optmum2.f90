@@ -18,7 +18,7 @@ contains
     integer(8), intent(in) :: age
     real(8), intent(in) :: A, AIME
     real(8), intent(in) :: M
-    real(8), intent(in) :: Vgood(:,:,:,:), Vbad(:,:,:,:)
+    real(8), intent(in) :: Vgood(:,:,:,:,:), Vbad(:,:,:,:,:)
     real(8), intent(in) :: Astate(:), Wstate(:), AIMEstate(:)
     real(8), intent(in) :: mortality_good(:), mortality_bad(:), good_to_bad(:), bad_to_bad(:)
 
@@ -26,6 +26,7 @@ contains
 
     integer(1) :: flag
     integer(8) :: Ci, i
+    integer(8) :: currentB
 
     real(8) :: PIA, ss, income, cashonhand
     real(8) :: Cstate(Cnum), C, Cmin, Cmax
@@ -34,6 +35,7 @@ contains
 
     valopt = -10000000000.0_8
 
+    currentB = 1_8
     PIA = computePIA(AIME)
     ss = PIA
     income = 0.0_8
@@ -73,8 +75,8 @@ contains
 
        bequestutils = beq(nextperiodassets, 1_1)
 
-       Evtgood = interp(age, nextperiodassets, 0.0_8, AIME, Vgood, Astate, Wstate, AIMEstate)
-       Evtbad = interp(age, nextperiodassets, 0.0_8, AIME, Vbad, Astate, Wstate, AIMEstate)
+       Evtgood = interp(age, nextperiodassets, 0.0_8, AIME, Vgood, Astate, Wstate, AIMEstate, Anum, Wnum, AIMEnum, currentB)
+       Evtbad = interp(age, nextperiodassets, 0.0_8, AIME, Vbad, Astate, Wstate, AIMEstate, Anum, Wnum, AIMEnum, currentB)
 !       write(*,*) Evt
 
        if (M==0.0_8) then

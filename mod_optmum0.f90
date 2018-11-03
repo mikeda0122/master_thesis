@@ -19,7 +19,7 @@ contains
     integer(8), intent(in) :: age
     real(8), intent(in) :: A, AIME, W
     real(8), intent(in) :: M
-    real(8), intent(in) :: Vgood(:,:,:,:), Vbad(:,:,:,:)
+    real(8), intent(in) :: Vgood(:,:,:,:,:), Vbad(:,:,:,:,:)
     real(8), intent(in) :: Astate(:) , AIMEstate(:), Hstate(:), Wstate(:)
     real(8), intent(in) :: mortality_good(:), mortality_bad(:), good_to_bad(:), bad_to_bad(:)
     real(8), intent(in) :: hlogwage(:), ulogwage(:), hhgr(:), hugr(:), uhgr(:), uugr(:)
@@ -92,8 +92,8 @@ contains
                 bequestutils = beq(nextperiodassets, 1_1)
 
                 call nextwage(age, W, M, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, wtpogood, wtpobad)
-                Evtgood = integral(age, nextperiodassets, wtpogood, nextperiodAIME, Vgood, Astate, Wstate, AIMEstate)
-                Evtbad = integral(age, nextperiodassets, wtpobad, nextperiodAIME, Vbad, Astate, Wstate, AIMEstate)
+                Evtgood = integral(age, nextperiodassets, wtpogood, nextperiodAIME, Vgood, Astate, Wstate, AIMEstate, currentB)
+                Evtbad = integral(age, nextperiodassets, wtpobad, nextperiodAIME, Vbad, Astate, Wstate, AIMEstate, currentB)
                 if(M == 0.0_8) then
                    Evtpo = ((1.0_8-mortality_good(age-20+1))*((1.0_8-good_to_bad(age-20+1))*Evtgood &
                         + good_to_bad(age-20+1)*Evtbad) + mortality_good(age-20+1)*bequestutils)

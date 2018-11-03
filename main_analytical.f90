@@ -174,7 +174,7 @@ do age = etstage-1, penage, -1 !age 69-62
             write(15,'(i2, a, f4.2, a, f10.2, a, i3, a, f10.2, a, i3, a, f10.2, a, i3, a, f10.2, a, f10.2, a, f10.2, a, f18.10)')&
                  age, ',', 0.0_8, ',', Astate(Ai), ',', Ai, ',', AIMEstate(AIMEi), ',', AIMEi, ',', Wstate(Wi), ',', Wi, ',', Aopt, ',', Copt, ',', Hopt, ',', valopt
 
-            call optmum1(age, Astate(Ai), AIMEstate(AIMEi), Wstate(Wi), 1.0_8, Vgood, Vbad, Astate, AIMEstate, Wstate, Hstate, mortality_good, mortality_bad, good_to_bad, bad_to_bad, &
+            call optmum0(age, Astate(Ai), AIMEstate(AIMEi), Wstate(Wi), 1.0_8, Vgood, Vbad, Astate, AIMEstate, Wstate, Hstate, mortality_good, mortality_bad, good_to_bad, bad_to_bad, &
                  hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, Copt, Hopt, Aopt, valopt)
             Vbad(age-bornage+1_8, AIMEi, Wi, Ai) = valopt
             optC_bad(age-bornage+1_8, AIMEi, Wi, Ai)=Copt

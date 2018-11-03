@@ -113,7 +113,7 @@ module mod_parameter
     ! grids of AIME
     integer(8) :: AIMEnum  =   10
     integer(8) :: bdplace =    7
-    integer(8) :: AIMEnint = 5
+    integer(8) :: AIMEnint = 10
     real(8) :: AIMEmax  = 43800
     real(8) :: AIMEmin  =  2000
     real(8) :: AIMEint = 9000

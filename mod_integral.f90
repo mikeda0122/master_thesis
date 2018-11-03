@@ -30,20 +30,20 @@ contains
 !nodenum==5;
 !      nodes=intmat5[.,1]; wgts=intmat5[.,2]; !since it is symmetric, intmat5 actually provides 5 nodes and weights
 
-function integral(age, nextperiodassets, W, nextperiodAIME, V, Astate, Wstate, AIMEstate) result(vint)
+function integral(age, nextperiodassets, W, nextperiodAIME, V, Astate, Wstate, AIMEstate, Bi) result(vint)
       implicit none
       integer(8), intent(in) :: age
-      real(8), intent(in) :: nextperiodassets, W, nextperiodAIME, V(:,:,:,:), Astate(:), Wstate(:), AIMEstate(:)
+      real(8), intent(in) :: nextperiodassets, W, nextperiodAIME, V(:,:,:,:,:), Astate(:), Wstate(:), AIMEstate(:)
+      integer(8), intent(in) :: Bi
       real(8), intent(out):: vint
       real(8) :: ev, wage
       integer :: i
       integer(1), parameter::  wnodenum = 5
-
     wage=0.0_8
     vint=0.0_8
     do i = 1, wnodenum
-        wage= W*wnodes(i)  !wage = (sqrt(2) * sigma * wnodes(i) + mu) ,where (mu, sigma^2) = (0, 0.0141)
-        ev=interp(age, nextperiodassets, wage, nextperiodAIME, V, Astate, Wstate, AIMEstate)
+       wage= W*wnodes(i)  !wage = (sqrt(2) * sigma * wnodes(i) + mu) ,where (mu, sigma^2) = (0, 0.0141)
+        ev=interp(age, nextperiodassets, wage, nextperiodAIME, V, Astate, Wstate, AIMEstate, Anum, Wnum, AIMEnum, Bi)
         vint=vint+ev*wwgts(i)
     enddo
     vint = vint/sqrt(pi)
