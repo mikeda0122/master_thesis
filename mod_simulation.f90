@@ -9,7 +9,7 @@ module mod_simulation
 contains
 
   subroutine simulation_mean(A_dist, M_dist, W_dist, AIME_dist, mortality_good, mortality_bad, good_to_bad, bad_to_bad, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, optC_good, optC_bad, optA_good,&
-       & optA_bad, optH_good, optH_bad, optB_good, optB_bad, Astate, Wstate, AIMEstate, mean_prof_C_good, mean_prof_C_bad, mean_prof_A_good, mean_prof_A_bad, mean_prof_H_good, mean_prof_H_bad, mean_prof_B_good, mean_prof_B_bad)
+       & optA_bad, optH_good, optH_bad, optB_good, optB_bad, Astate, Wstate, AIMEstate, mean_prof_C_good, mean_prof_C_bad, mean_prof_A_good, mean_prof_A_bad, mean_prof_H_good, mean_prof_H_bad, mean_prof_B_good, mean_prof_B_bad, mean_prof_P_good, mean_prof_P_bad)
 
     implicit none
         
@@ -26,9 +26,10 @@ contains
     real(8), intent(out) :: mean_prof_A_good(:), mean_prof_A_bad(:)
     real(8), intent(out) :: mean_prof_H_good(:), mean_prof_H_bad(:)
     real(8), intent(out) :: mean_prof_B_good(:), mean_prof_B_bad(:)
+    real(8), intent(out) :: mean_prof_P_good(:), mean_prof_P_bad(:)
 
     real(8) :: prof_C(dieage-bornage+1), prof_A(dieage-bornage+1), prof_H(dieage-bornage+1)
-    integer(8) :: prof_B(dieage-bornage+1)
+    integer(8) :: prof_B(dieage-bornage+1), prof_P(dieage-bornage+1)
     real(8) :: pop_good(dieage-bornage+1), pop_bad(dieage-bornage+1)
     real(8) :: health(dieage-bornage+1)
     real(8), allocatable :: wshock_vector(:)
@@ -46,6 +47,8 @@ contains
        mean_prof_H_bad(age) = 0.0_8
        mean_prof_B_good(age) = 0.0_8
        mean_prof_B_bad(age) = 0.0_8
+       mean_prof_P_good(age) = 0.0_8
+       mean_prof_P_bad(age) = 0.0_8
        pop_good(age) = 0.0_8
        pop_bad(age) = 0.0_8
     end do
@@ -71,14 +74,20 @@ contains
                 mean_prof_A_good(age) = mean_prof_A_good(age) + prof_A(age)
                 mean_prof_H_good(age) = mean_prof_H_good(age) + prof_H(age)
                 mean_prof_B_good(age) = mean_prof_B_good(age) + prof_B(age)
-
+                if (prof_H(age)>0.0_8) then
+                   mean_prof_P_good(age) = mean_prof_P_good(age) + 1.0_8
+                end if
+                
                 pop_good(age) = pop_good(age) + 1
              else if (health(age)==1.0_8) then
                 mean_prof_C_bad(age) = mean_prof_C_bad(age) + prof_C(age)
                 mean_prof_A_bad(age) = mean_prof_A_bad(age) + prof_A(age)
                 mean_prof_H_bad(age) = mean_prof_H_bad(age) + prof_H(age)
                 mean_prof_B_bad(age) = mean_prof_B_bad(age) + prof_B(age)
-
+                if (prof_H(age)>0.0_8) then
+                   mean_prof_P_bad(age) = mean_prof_P_bad(age) + 1.0_8
+                end if
+                
                 pop_bad(age) = pop_bad(age) + 1             
              end if
           end if
@@ -96,13 +105,16 @@ contains
     mean_prof_H_bad = mean_prof_H_bad/pop_bad
     mean_prof_B_good = mean_prof_B_good/pop_good
     mean_prof_B_bad = mean_prof_B_bad/pop_bad
+    mean_prof_P_good = mean_prof_P_good/pop_good
+    mean_prof_P_bad = mean_prof_P_bad/pop_bad
 
     open(unit=69, file='simulated_prof.csv')
-    write(69, "(A)") "age, C_good, C_bad, A_good, A_bad, H_good, H_bad, B_good, B_bad"
+    write(69, "(A)") "age, C_good, C_bad, A_good, A_bad, H_good, H_bad, P_good, P_bad, B_good, B_bad"
 
     do age = 1, dieage-bornage+1
-       write(69, '(i2, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5)') age+bornage-1, ',', mean_prof_C_good(age),&
-            & ',', mean_prof_C_bad(age), ',', mean_prof_A_good(age), ',', mean_prof_A_bad(age), ',', mean_prof_H_good(age), ',', mean_prof_H_bad(age), ',', mean_prof_B_good(age), ',', mean_prof_B_bad(age)
+       write(69, '(i2, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5)') age+bornage-1, ',', mean_prof_C_good(age),&
+            & ',', mean_prof_C_bad(age), ',', mean_prof_A_good(age), ',', mean_prof_A_bad(age), ',', mean_prof_H_good(age), ',', mean_prof_H_bad(age), &
+            & ',', mean_prof_P_good(age), ',', mean_prof_P_bad(age), ',', mean_prof_B_good(age), ',', mean_prof_B_bad(age)
     end do
 
     close(54)

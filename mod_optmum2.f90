@@ -2,7 +2,10 @@ module mod_optmum2
 
   use mod_parameter
   use mod_makegrids
+  use mod_computeAfterTaxIncome
   use mod_computePIA
+  use mod_pension
+  use mod_ass
   use mod_utility
   use mod_interp
 
@@ -28,9 +31,10 @@ contains
     integer(8) :: Ci, i
     integer(8) :: currentB
 
-    real(8) :: PIA, ss, income, cashonhand
+    real(8) :: PIA, ss, pb, laborincome, income, cashonhand
     real(8) :: Cstate(Cnum), C, Cmin, Cmax
     real(8) :: nextperiodassets, utils, bequestutils
+    real(8) :: MTR, reduc
     real(8) :: Evtgood, Evtbad, Evtpo, val
 
     valopt = -10000000000.0_8
@@ -38,7 +42,9 @@ contains
     currentB = 1_8
     PIA = computePIA(AIME)
     ss = PIA
-    income = 0.0_8
+    pb = predictpensionbenefits(PIA, age)
+    laborincome = 0.0_8
+    income = computeaftertaxincome(laborincome, A, MTR, 0.0_8, pb, taxtype, age)
 
     cashonhand = ss + income + A
 
@@ -64,7 +70,7 @@ contains
           C = cfloor
        end if
        
-       nextperiodassets = cashonhand - C
+       call ass(currentB, income, C, laborincome, A, ss, reduc, nextperiodassets)
 
        if (nextperiodassets < 0) then
           flag = 1_1
@@ -110,18 +116,3 @@ contains
   end subroutine optmum2
 end module mod_optmum2
 
-    
-    
-
-
-
-
-
-
-
-
-
-
-
-
-    

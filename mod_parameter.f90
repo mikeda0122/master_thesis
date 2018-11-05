@@ -111,9 +111,9 @@ module mod_parameter
     real(8) :: Aint    = 80000
 
     ! grids of AIME
-    integer(8) :: AIMEnum  =   10
+    integer(8) :: AIMEnum  =  10
     integer(8) :: bdplace =    7
-    integer(8) :: AIMEnint = 10
+    integer(8) :: AIMEnint = 5
     real(8) :: AIMEmax  = 43800
     real(8) :: AIMEmin  =  2000
     real(8) :: AIMEint = 9000
@@ -166,11 +166,11 @@ real(8) :: litcred68 = 0.02752
 real(8) :: litcred69 = 0.026786
 
 !taxfrac !changes applied in mod_ass.f90
-!real(8) :: taxfrac = 0.5 !Used in mod_ass.f90, effective only if earnings below earnings test threshold levels
-!real(8) :: earnlev = 6000 !earnlev when taxfrac = 0.5. found in algs55.src line 207.
+real(8) :: taxfrac = 0.5 !Used in mod_ass.f90, effective only if earnings below earnings test threshold levels
+real(8) :: earnlev = 6000 !earnlev when taxfrac = 0.5. found in algs55.src line 207.
 
 !taxtype
-integer(8) :: taxtype = 0
+integer(1) :: taxtype = 0
 
 !integral part
 real(8):: wnodes(1:5) = (/ -2.02018287d0, -0.9585724646d0, 0.0d0, 0.9585724646d0, 2.02018287d0 /)

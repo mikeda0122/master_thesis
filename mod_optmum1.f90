@@ -2,8 +2,11 @@ module mod_optmum1
 
   use mod_parameter
   use mod_makegrids
+  use mod_computeAfterTaxIncome
   use mod_computeAIME
   use mod_computePIA
+  use mod_pension
+  use mod_ass
   use mod_utility
   use mod_interp
   use mod_integral
@@ -37,12 +40,16 @@ contains
     integer(8) :: currentB
     real(8) :: cumadj2, eretadj, bigcred, cumeretadj, litcred
     integer(1) :: particip
-    real(8) :: PIA, ss, laborincome, income, cashonhand, adjAIME
+    real(8) :: PIA, ss, pb, laborincome, income, cashonhand, adjAIME
+    real(8) :: MTR, reduc
     real(8) :: nextperiodassets, nextperiodAIME, utils, bequestutils
     real(8) :: wtpogood, wtpobad
     real(8) :: Evtgood, Evtbad, Evtpo, val
 
     valopt = -10000000000.0_8
+
+    PIA = computePIA(AIME)
+    pb = predictpensionbenefits(PIA, age)
     
     do pi = 1, 2
        do Hi = 1, Hnum
@@ -88,7 +95,7 @@ contains
 
              laborincome = H*W
 
-             income = laborincome
+             income = computeaftertaxincome(laborincome, A, MTR, W, pb, taxtype, age)
 
              if (currentB==0_8) then
                 call computeAIME(AIME, laborincome, age, currentB, nextperiodAIME)
@@ -117,8 +124,7 @@ contains
                    C = cfloor
                 end if
 
-                nextperiodassets = cashonhand - C
-
+                call ass(currentB, income, C, laborincome, A, ss, reduc, nextperiodassets)
                 utils = U(C, H, particip, M, 1_1)
                 !utils = log(C) + log(H)
 

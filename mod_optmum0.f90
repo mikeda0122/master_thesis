@@ -2,7 +2,9 @@ module mod_optmum0
 
   use mod_parameter
   use mod_makegrids
+  use mod_computeAfterTaxIncome
   use mod_computeaime
+  use mod_ass
   use mod_utility
   use mod_interp
   use mod_integral
@@ -33,14 +35,17 @@ contains
     real(8) :: H
     integer(8) :: currentB
     integer(1) :: particip
-    real(8) :: laborincome, income, cashonhand
+    real(8) :: laborincome, income, cashonhand, pb, ss
+    real(8) :: MTR, reduc
     real(8) :: nextperiodassets, nextperiodAIME, utils, bequestutils
     real(8) :: wtpogood, wtpobad
     real(8) :: Evtgood, Evtbad, Evtpo, val
 
     valopt = -10000000000.0_8
     currentB = 0_8
-
+    pb = 0.0_8
+    ss = 0.0_8
+    
     do pi = 1, 2
           do Hi = 1, Hnum
              if (pi == 1_8) then
@@ -62,7 +67,7 @@ contains
                 write(*,*) 'Health is neither 0 nor 1!!'
              end if
 
-             income = laborincome
+             income = computeaftertaxincome(laborincome, A, MTR, W, pb, taxtype, age)
 
              call computeAIME(AIME, laborincome, age, currentB, nextperiodAIME)
 
@@ -84,7 +89,7 @@ contains
                    C = cfloor
                 end if
 
-                nextperiodassets = cashonhand - C
+                call ass(currentB, income, C, laborincome, A, ss, reduc, nextperiodassets)
 
                 utils = U(C, H, particip, M, 1_1)
 !                utils = log(C) + log(H)

@@ -42,7 +42,8 @@ function integral(age, nextperiodassets, W, nextperiodAIME, V, Astate, Wstate, A
     wage=0.0_8
     vint=0.0_8
     do i = 1, wnodenum
-       wage= W*wnodes(i)  !wage = (sqrt(2) * sigma * wnodes(i) + mu) ,where (mu, sigma^2) = (0, 0.0141)
+       wage= W+sqrt(2*0.0141)*wnodes(i) !wage = (sqrt(2) * sigma * wnodes(i) + mu) ,where (mu, sigma^2) = (0, 0.0141)
+       !wage= W*wnodes(i)
         ev=interp(age, nextperiodassets, wage, nextperiodAIME, V, Astate, Wstate, AIMEstate, Anum, Wnum, AIMEnum, Bi)
         vint=vint+ev*wwgts(i)
     enddo

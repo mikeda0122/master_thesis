@@ -2,7 +2,10 @@ module mod_optmum3_gsearch
 
   use mod_parameter
   use mod_makegrids
+  use mod_computeAfterTaxIncome
   use mod_computePIA
+  use mod_ass
+  use mod_pension
   use mod_utility
 
   implicit none
@@ -25,17 +28,19 @@ contains
     integer(8) :: Ci, i
 
     real(8) :: Cstate(Cnum), C, Cmin, Cmax
-    real(8) :: PIA, ss, laborincome, income, cashonhand
+    real(8) :: PIA, ss, pb, laborincome, income, cashonhand
     real(8) :: nextperiodassets, utils, bequestutils
+    real(8) :: MTR, reduc
     real(8) :: val
 
     valopt = -10000000000.0_8
 
     PIA = computePIA(AIME)
     ss = PIA
+    pb = predictpensionbenefits(PIA, age)
     laborincome = 0.0_8
  
-    income = laborincome
+    income = computeaftertaxincome(laborincome, A, MTR, 0.0_8, pb, taxtype, age)
 
     cashonhand = ss + income + A
     flag = 0_1
@@ -55,8 +60,8 @@ contains
           C = cfloor
        end if
 
-       nextperiodassets = cashonhand - C
-
+       call ass(1_8, income, C, laborincome, A, ss, reduc, nextperiodassets)
+       
        utils = U(C, 0.0_8, 0_1, M, 1_1)
 !       utils = log(C)
 

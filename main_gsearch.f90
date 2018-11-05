@@ -27,6 +27,7 @@ program main
   real(8) :: prof_C_good(dieage-bornage+1), prof_C_bad(dieage-bornage+1)
   real(8) :: prof_H_good(dieage-bornage+1), prof_H_bad(dieage-bornage+1)
   real(8) :: prof_B_good(dieage-bornage+1), prof_B_bad(dieage-bornage+1)
+  real(8) :: prof_P_good(dieage-bornage+1), prof_P_bad(dieage-bornage+1)
 
   integer(8) :: Ai, Wi, AIMEi, Bi, Bidx
   integer(8) :: age
@@ -80,8 +81,7 @@ program main
   p_leisprefbad = 258.115_8
   p_fixcost = 928.774_8
   p_beta = 0.984991_8
-  !p_bequest = 0.0255898_8
-  p_bequest = 0.2_8
+  p_bequest = 0.0255898_8
   p_conspref = 1000000.0_8
   p_beqk = 500000.0_8
   p_onemgamc = 1.0_8
@@ -273,7 +273,7 @@ end do !age loop
   
   close(15)
 
-  sim_length = 10000_8
+  sim_length = 100000_8
   allocate(A_dist(sim_length))
   allocate(M_dist(sim_length))
   allocate(W_dist(sim_length))
@@ -304,7 +304,7 @@ end do !age loop
   close(90)
   
   call simulation_mean(A_dist, M_dist, W_dist, AIME_dist, mortality_good, mortality_bad, good_to_bad, bad_to_bad, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, &
-       optC_good, optC_bad, optA_good, optA_bad, optH_good, optH_bad, optB_good, optB_bad, Astate, Wstate, AIMEstate, prof_C_good, prof_C_bad, prof_A_good, prof_A_bad, prof_H_good, prof_H_bad, prof_B_good, prof_B_bad) 
+       optC_good, optC_bad, optA_good, optA_bad, optH_good, optH_bad, optB_good, optB_bad, Astate, Wstate, AIMEstate, prof_C_good, prof_C_bad, prof_A_good, prof_A_bad, prof_H_good, prof_H_bad, prof_B_good, prof_B_bad, prof_P_good, prof_P_bad) 
   
 end program main
 

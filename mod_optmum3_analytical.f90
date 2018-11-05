@@ -2,6 +2,8 @@ module mod_optmum3_analytical
 
   use mod_parameter
   use mod_computePIA
+  use mod_pension
+  use mod_computeAfterTaxIncome
   
   implicit none
 
@@ -28,8 +30,9 @@ contains
 
     PIA = computePIA(AIME)
     ss = PIA
+    pb = predictpensionbenefits(PIA, 95_8)
     
-    Y = 0.0_8
+    Y = computeAfterTaxIncome(0.0_8, A, MTR, 0.0_8, pb, taxtype, 95_8)
 
     alpha1 = (1.0_8 / (1.0_8-p_gamc))*((p_leispref - p_leisprefbad*M)** &
     & ((1.0_8 - p_gamh)*(1.0_8 - p_gamc)) )
