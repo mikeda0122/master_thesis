@@ -1,4 +1,4 @@
-module mod_optimization
+module mod_optmum0
 
   use mod_parameter
   use mod_makegrids
@@ -9,17 +9,18 @@ module mod_optimization
 
 contains
 
-  subroutine optimization(age, A, V, Astate, Hstate, mortality, logwage, Copt, Hopt, Aopt, valopt)
+  subroutine optmum0(age, A, M, Vgood, Vbad, Astate, Hstate, mortality_good, mortality_bad, good_to_bad, bad_to_bad, hlogwage, ulogwage, Copt, Hopt, Aopt, valopt)
 
     implicit none
 
     
     integer(8), intent(in) :: age
     real(8), intent(in) :: A
-    
-    real(8), intent(in) :: V(:,:)
+    real(8), intent(in) :: M
+    real(8), intent(in) :: Vgood(:,:), Vbad(:,:)
     real(8), intent(in) :: Astate(:) , Hstate(:)
-    real(8), intent(in) :: mortality(:), logwage(:)
+    real(8), intent(in) :: mortality_good(:), mortality_bad(:), good_to_bad(:), bad_to_bad(:)
+    real(8), intent(in) :: hlogwage(:), ulogwage(:)
 
     real(8), intent(out) :: valopt, Copt, Hopt, Aopt
 
@@ -31,7 +32,7 @@ contains
     integer(1) :: particip
     real(8) :: laborincome, income, cashonhand
     real(8) :: nextperiodassets, utils, bequestutils
-    real(8) :: Evt, Evtpo, val
+    real(8) :: Evtgood, Evtbad, Evtpo, val
 
     valopt = -10000000000.0_8
 
@@ -50,7 +51,13 @@ contains
              if (age>=70 .and. age < 95) then
                 laborincome = 0.0_8
              else if (30 <= age .and. age < 70) then
-                laborincome = H*exp(logwage(age-momage+1))
+                if (M==0.0_8) then
+                   laborincome = H*exp(hlogwage(age-momage+1))
+                else if (M==1.0_8) then
+                   laborincome = H*exp(ulogwage(age-momage+1))
+                else
+                   write(*,*) 'Health is neither 0 nor 1!!'
+                end if
              else
                 print*, 'This is not what you want!!'
                 read*
@@ -78,15 +85,27 @@ contains
 
                 nextperiodassets = cashonhand - C
 
-                utils = U(C, H, particip, 0.0_8, 1_1)
+                utils = U(C, H, particip, M, 1_1)
 
                 bequestutils = beq(nextperiodassets, 1_1)
 
-                Evt = interp(age, nextperiodassets, V, Astate)
+                Evtgood = interp(age, nextperiodassets, Vgood, Astate)
+                Evtbad = interp(age, nextperiodassets, Vbad, Astate)
+                
+                if (M==0.0_8) then
 
+                   Evtpo = ((1.0_8 - mortality_good(age-20+1))*((1.0_8-good_to_bad(age-20+1))*Evtgood &
+                        & + good_to_bad(age-20+1)*Evtbad)+ mortality_good(age-20+1)*bequestutils)
+                else if (M==1.0_8) then
+
+                   Evtpo = ((1.0_8 - mortality_bad(age-20+1))*((1.0_8-bad_to_bad(age-20+1))*Evtgood &
+                        & + bad_to_bad(age-20+1)*Evtbad)+ mortality_bad(age-20+1)*bequestutils)
+                else
+                   write(*,*) 'Health is neither 0 nor 1!!'
+                end if
+             
                 !       write(*,*) Evt
 
-                Evtpo = (1.0_8 - mortality(age-20+1))*Evt + mortality(age-20+1)*bequestutils
                 !       write(*,*) mortality(age-20+1)
 
                 !       write(*,*) Evtpo
@@ -104,8 +123,9 @@ contains
           end do !End Hi loop
        end do !end particip loop
 
-  end subroutine optimization
-end module mod_optimization
+     end subroutine optmum0     
+   end module mod_optmum0
+   
 
     
     
