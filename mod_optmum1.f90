@@ -71,6 +71,7 @@ contains
                 call getadj(62_8, currentB, cumadj2, eretadj, bigcred, cumeretadj, litcred)
                 if (currentB==1_8) then
                    adjAIME = cumeretadj*AIME
+                   adjAIME = AIME
                 else
                    adjAIME = AIME
                 end if
@@ -83,8 +84,10 @@ contains
                 call getadj(age, currentB, cumadj2, eretadj, bigcred, cumeretadj, litcred)
                 if ( age < 65 .and. currentB==1_8) then
                    adjAIME = cumeretadj * AIME
+                   adjAIME = AIME
                 else if (currentB==1_8) then
                    adjAIME = (1+litcred) * AIME
+                   adjAIME = AIME
                 else
                    adjAIME = AIME
                 end if
@@ -97,14 +100,14 @@ contains
 
              income = computeaftertaxincome(laborincome, A, MTR, W, pb, taxtype, age)
 
-             if (currentB==0_8) then
-                call computeAIME(AIME, laborincome, age, currentB, nextperiodAIME)
-             else if (currentB==1_8) then
-                nextperiodAIME = adjAIME
-             else
-                write(*,*) 'something is wrong with nextperiodAIME!! in optmum1'
-                read*
-             end if
+!             if (currentB==0_8) then
+                call computeAIME(adjAIME, laborincome, age, currentB, nextperiodAIME)
+!             else if (currentB==1_8) then
+!                nextperiodAIME = adjAIME
+!             else
+!                write(*,*) 'something is wrong with nextperiodAIME!! in optmum1'
+!                read*
+!             end if
 
              cashonhand = ss + income + A
              flag = 0_1
@@ -170,7 +173,7 @@ contains
                 !read*
 
                 val = utils + p_beta*Evtpo
-                if (val > valopt) then
+                if (val > valopt .and. currentB >= B) then
                    Copt = C
                    Hopt = H
                    Aopt = nextperiodassets

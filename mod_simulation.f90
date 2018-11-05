@@ -229,7 +229,8 @@ contains
              laborincome = Wstate(Windex)*prof_H(age-bornage+1)
              if (prof_B(age-bornage+1)>prof_B(age-bornage+1-1)) then
                 call getadj(age, prvB, cumadj2, eretadj, bigcred, cumeretadj, litcred)
-                prvAIME = cumeretadj*AIMEstate(AIMEindex)
+                call computeAIME(cumeretadj*AIMEstate(AIMEindex), laborincome, age, 0_8, prvAIME)
+                
              else
                 call computeAIME(AIMEstate(AIMEindex), laborincome, age, 0_8, prvAIME)
              end if
@@ -237,7 +238,8 @@ contains
              laborincome = Wstate(Windex)*prof_H(age-bornage+1)     
              if (prof_B(age-bornage+1)>prof_B(age-bornage+1-1)) then
                 call getadj(age, prvB, cumadj2, eretadj, bigcred, cumeretadj, litcred)
-                prvAIME = (1.0_8+litcred)*AIMEstate(AIMEindex)
+                call computeAIME((1.0_8+litcred)*AIMEstate(AIMEindex), laborincome, age, 0_8, prvAIME)
+            
              else
                 call computeAIME(AIMEstate(AIMEindex), laborincome, age, 0_8, prvAIME)
              end if

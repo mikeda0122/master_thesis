@@ -273,7 +273,7 @@ end do !age loop
   
   close(15)
 
-  sim_length = 100000_8
+  sim_length = 10000_8
   allocate(A_dist(sim_length))
   allocate(M_dist(sim_length))
   allocate(W_dist(sim_length))

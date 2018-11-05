@@ -41,7 +41,7 @@ contains
 !  AND the worker has not applied for SS benefits
 
  !   if ((laborincome>AIME) && (apply==0))
-    else if (laborincome >AIME .and. apply == 0 ) then !Sungwan: I added apply==0 part
+    else if (laborincome >AIME) then !Sungwan: I added apply==0 part
         nextAIME = AIME + (laborincome - AIME)*accrue
         if (nextAIME > AIMEmax) then
           nextAIME = AIMEmax
