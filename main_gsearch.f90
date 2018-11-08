@@ -13,7 +13,7 @@ program main
   implicit none
 
   real(8) :: Astate(Anum), Hstate(Hnum), Wstate(Wnum), AIMEstate(AIMEnum)
-  real(8) :: Copt, Aopt, Hopt, valopt
+  real(8) :: Copt, Aopt, Hopt, Wopt_good, Wopt_bad, AIMEopt, valopt
   integer(8) :: Bopt
   real(8) :: M
 
@@ -22,6 +22,9 @@ program main
   real(8) :: optA_good(dieage-bornage+1, AIMEnum, Wnum, Anum, Bnum), optA_bad(dieage-bornage+1, AIMEnum, Wnum, Anum, Bnum)
   real(8) :: optH_good(dieage-bornage+1, AIMEnum, Wnum, Anum, Bnum), optH_bad(dieage-bornage+1, AIMEnum, Wnum, Anum, Bnum)
   integer(8) :: optB_good(dieage-bornage+1, AIMEnum, Wnum, Anum, Bnum), optB_bad(dieage-bornage+1, AIMEnum, Wnum, Anum, Bnum)
+  real(8) :: optW_good_good(dieage-bornage+1, AIMEnum, Wnum, Anum, Bnum), optW_good_bad(dieage-bornage+1, AIMEnum, Wnum, Anum, Bnum)
+  real(8) :: optW_bad_good(dieage-bornage+1, AIMEnum, Wnum, Anum, Bnum), optW_bad_bad(dieage-bornage+1, AIMEnum, Wnum, Anum, Bnum)
+  real(8) :: optAIME_good(dieage-bornage+1, AIMEnum, Wnum, Anum, Bnum), optAIME_bad(dieage-bornage+1, AIMEnum, Wnum, Anum, Bnum)
 
   real(8) :: prof_A_good(dieage-bornage+1), prof_A_bad(dieage-bornage+1)
   real(8) :: prof_C_good(dieage-bornage+1), prof_C_bad(dieage-bornage+1)
@@ -92,7 +95,6 @@ program main
   if (p_gamh/=1.0_8) then
      p_onemgamh = 1.0_8/(1.0_8-p_gamh)
   end if
-  nonsep = 1_1
   tiedwage = 0_8
 
   open(unit=15, file='valuesopt.csv')
@@ -106,6 +108,9 @@ program main
            optA_good(95-bornage+1_8, AIMEi, 1_8, Ai, Bi)=Aopt
            optH_good(95-bornage+1_8, AIMEi, 1_8, Ai, Bi)=0.0_8
            optB_good(95-bornage+1_8, AIMEi, 1_8, Ai, Bi)=1_8
+           optW_good_good(95-bornage+1_8, AIMEi, 1_8, Ai, Bi)=0.0_8
+           optW_good_bad(95-bornage+1_8, AIMEi, 1_8, Ai, Bi)=0.0_8
+           optAIME_good(95-bornage+1_8, AIMEi, 1_8, Ai, Bi)=AIMEstate(AIMEi)
         end do
         write(15,'(i2, a, f4.2, a, f10.2, a, i3, a, f10.2, a, i3, a, f10.2, a, i3, a, f10.2, a, f10.2, a, f10.2, a, i2, a, f18.10)') &
              95, ',', 0.0_8, ',', Astate(Ai), ',', Ai, ',', AIMEstate(AIMEi), ',', AIMEi, ',',  0.0_8, ',', 1_8, ',', Aopt, ',', Copt, ',', 0.0_8, ',', 1_8, ',', valopt
@@ -116,7 +121,10 @@ program main
            optC_bad(95-bornage+1_8, AIMEi, 1_8, Ai, Bi)=Copt
            optA_bad(95-bornage+1_8, AIMEi, 1_8, Ai, Bi)=Aopt
            optH_bad(95-bornage+1_8, AIMEi, 1_8, Ai, Bi)=0.0_8
-           optB_bad(95-bornage+1_8, AIMEi, 1_8, Ai, Bi)=1_8     
+           optB_bad(95-bornage+1_8, AIMEi, 1_8, Ai, Bi)=1_8
+           optW_bad_good(95-bornage+1_8, AIMEi, 1_8, Ai, Bi)=0.0_8
+           optW_bad_bad(95-bornage+1_8, AIMEi, 1_8, Ai, Bi)=0.0_8
+           optAIME_bad(95-bornage+1_8, AIMEi, 1_8, Ai, Bi)=AIMEstate(AIMEi)
         end do
 
         write(15,'(i2, a, f4.2, a, f10.2, a, i3, a, f10.2, a, i3, a, f10.2, a, i3, a, f10.2, a, f10.2, a, f10.2, a, i2, a, f18.10)') &
@@ -128,12 +136,19 @@ program main
               optC_good(95_8-bornage+1_8, AIMEi, Wi, Ai, Bi) = optC_good(95_8-bornage+1, AIMEi, 1_8, Ai, Bi)
               optA_good(95_8-bornage+1_8, AIMEi, Wi, Ai, Bi) = optA_good(95_8-bornage+1, AIMEi, 1_8, Ai, Bi)     
               optH_good(95_8-bornage+1_8, AIMEi, Wi, Ai, Bi) = optH_good(95_8-bornage+1, AIMEi, 1_8, Ai, Bi)
-              optB_good(95_8-bornage+1_8, AIMEi, Wi, Ai, Bi) = optB_good(95_8-bornage+1, AIMEi, 1_8, Ai, Bi)
+              optB_good(95_8-bornage+1_8, AIMEi, Wi, Ai, Bi) = optB_good(95_8-bornage+1, AIMEi, 1_8, Ai, Bi)     
+              optW_good_good(95_8-bornage+1_8, AIMEi, Wi, Ai, Bi) = optW_good_good(95_8-bornage+1, AIMEi, 1_8, Ai, Bi)
+              optW_good_bad(95_8-bornage+1_8, AIMEi, Wi, Ai, Bi) = optW_good_bad(95_8-bornage+1, AIMEi, 1_8, Ai, Bi)
+              optAIME_good(95_8-bornage+1_8, AIMEi, Wi, Ai, Bi) = optAIME_good(95_8-bornage+1, AIMEi, 1_8, Ai, Bi)
+              
               Vbad(95_8-bornage+1_8, AIMEi, Wi, Ai, Bi) = Vbad(95_8-bornage+1, AIMEi, 1_8, Ai, Bi)
               optC_bad(95_8-bornage+1_8, AIMEi, Wi, Ai, Bi) = optC_bad(95_8-bornage+1, AIMEi, 1_8, Ai, Bi)
               optA_bad(95_8-bornage+1_8, AIMEi, Wi, Ai, Bi) = optA_bad(95_8-bornage+1, AIMEi, 1_8, Ai, Bi)     
               optH_bad(95_8-bornage+1_8, AIMEi, Wi, Ai, Bi) = optH_bad(95_8-bornage+1, AIMEi, 1_8, Ai, Bi)
-              optB_bad(95_8-bornage+1_8, AIMEi, Wi, Ai, Bi) = optB_bad(95_8-bornage+1, AIMEi, 1_8, Ai, Bi)
+              optB_bad(95_8-bornage+1_8, AIMEi, Wi, Ai, Bi) = optB_bad(95_8-bornage+1, AIMEi, 1_8, Ai, Bi)     
+              optW_bad_good(95_8-bornage+1_8, AIMEi, Wi, Ai, Bi) = optW_bad_good(95_8-bornage+1, AIMEi, 1_8, Ai, Bi)
+              optW_bad_bad(95_8-bornage+1_8, AIMEi, Wi, Ai, Bi) = optW_bad_bad(95_8-bornage+1, AIMEi, 1_8, Ai, Bi)
+              optAIME_bad(95_8-bornage+1_8, AIMEi, Wi, Ai, Bi) = optAIME_bad(95_8-bornage+1, AIMEi, 1_8, Ai, Bi)
            end do
         end do
 
@@ -152,6 +167,9 @@ do age = dieage-1, etstage, -1 !age 94-70
             optA_good(age-bornage+1_8, AIMEi, 1_8, Ai, Bi)=Aopt
             optH_good(age-bornage+1_8, AIMEi, 1_8, Ai, Bi)=0.0_8
             optB_good(age-bornage+1_8, AIMEi, 1_8, Ai, Bi)=1_8
+            optW_good_good(age-bornage+1_8, AIMEi, 1_8, Ai, Bi)=0.0_8
+            optW_good_bad(age-bornage+1_8, AIMEi, 1_8, Ai, Bi)=0.0_8
+            optAIME_good(age-bornage+1_8, AIMEi, 1_8, Ai, Bi)=AIMEstate(AIMEi)
          end do      
          write(15,'(i2, a, f4.2, a, f10.2, a, i3, a, f10.2, a, i3, a, f10.2, a, i3, a, f10.2, a, f10.2, a, f10.2, a, i2, a, f18.10)')&
               age, ',', 0.0_8, ',', Astate(Ai), ',', Ai, ',', AIMEstate(AIMEi), ',', AIMEi, ',',  0.0_8, ',', 1_8, ',', Aopt, ',', Copt, ',', 0.0_8, ',', 1_8, ',', valopt
@@ -163,6 +181,9 @@ do age = dieage-1, etstage, -1 !age 94-70
             optA_bad(age-bornage+1_8, AIMEi, 1_8, Ai, Bi)=Aopt
             optH_bad(age-bornage+1_8, AIMEi, 1_8, Ai, Bi)=0.0_8
             optB_bad(age-bornage+1_8, AIMEi, 1_8, Ai, Bi)=1_8
+            optW_bad_good(age-bornage+1_8, AIMEi, 1_8, Ai, Bi)=0.0_8
+            optW_bad_bad(age-bornage+1_8, AIMEi, 1_8, Ai, Bi)=0.0_8
+            optAIME_bad(age-bornage+1_8, AIMEi, 1_8, Ai, Bi)=AIMEstate(AIMEi)
          end do  
          write(15,'(i2, a, f4.2, a, f10.2, a, i3, a, f10.2, a, i3, a, f10.2, a, i3, a, f10.2, a, f10.2, a, f10.2, a, i2, a, f18.10)')&
               age, ',', 1.0_8, ',', Astate(Ai), ',', Ai, ',', AIMEstate(AIMEi), ',', AIMEi, ',',  0.0_8, ',', 1_8, ',', Aopt, ',', Copt, ',', 0.0_8, ',', 1_8, ',', valopt
@@ -173,12 +194,18 @@ do age = dieage-1, etstage, -1 !age 94-70
                optC_good(age-bornage+1_8, AIMEi, Wi, Ai, Bi) = optC_good(age-bornage+1, AIMEi, 1_8, Ai, Bi)
                optA_good(age-bornage+1_8, AIMEi, Wi, Ai, Bi) = optA_good(age-bornage+1, AIMEi, 1_8, Ai, Bi)     
                optH_good(age-bornage+1_8, AIMEi, Wi, Ai, Bi) = optH_good(age-bornage+1, AIMEi, 1_8, Ai, Bi)
-               optB_good(age-bornage+1_8, AIMEi, Wi, Ai, Bi) = optB_good(age-bornage+1, AIMEi, 1_8, Ai, Bi)
+               optB_good(age-bornage+1_8, AIMEi, Wi, Ai, Bi) = optB_good(age-bornage+1, AIMEi, 1_8, Ai, Bi)     
+               optW_good_good(age-bornage+1_8, AIMEi, Wi, Ai, Bi) = optW_good_good(age-bornage+1, AIMEi, 1_8, Ai, Bi)
+               optW_good_bad(age-bornage+1_8, AIMEi, Wi, Ai, Bi) = optW_good_bad(age-bornage+1, AIMEi, 1_8, Ai, Bi)
+               optAIME_good(age-bornage+1_8, AIMEi, Wi, Ai, Bi) = optAIME_good(age-bornage+1, AIMEi, 1_8, Ai, Bi)
                Vbad(age-bornage+1_8, AIMEi, Wi, Ai, Bi) = Vbad(age-bornage+1, AIMEi, 1_8, Ai, Bi)
                optC_bad(age-bornage+1_8, AIMEi, Wi, Ai, Bi) = optC_bad(age-bornage+1, AIMEi, 1_8, Ai, Bi)
-               optA_bad(age-bornage+1_8, AIMEi, Wi, Ai, Bi) = optA_bad(age-bornage+1, AIMEi, 1_8, Ai, Bi)     
+               optA_bad(age-bornage+1_8, AIMEi, Wi, Ai, Bi) = optA_bad(age-bornage+1, AIMEi, 1_8, Ai, Bi)
                optH_bad(age-bornage+1_8, AIMEi, Wi, Ai, Bi) = optH_bad(age-bornage+1, AIMEi, 1_8, Ai, Bi)
                optB_bad(age-bornage+1_8, AIMEi, Wi, Ai, Bi) = optB_bad(age-bornage+1, AIMEi, 1_8, Ai, Bi)
+               optW_bad_good(age-bornage+1_8, AIMEi, Wi, Ai, Bi) = optW_bad_good(age-bornage+1, AIMEi, 1_8, Ai, Bi)
+               optW_bad_bad(age-bornage+1_8, AIMEi, Wi, Ai, Bi) = optW_bad_bad(age-bornage+1, AIMEi, 1_8, Ai, Bi)
+               optAIME_bad(age-bornage+1_8, AIMEi, Wi, Ai, Bi) = optAIME_bad(age-bornage+1, AIMEi, 1_8, Ai, Bi)
             end do
          end do
 
@@ -214,22 +241,28 @@ do age = etstage-1, penage, -1 !age 69-62
  !              end if              
 
                call optmum1(age, Astate(Ai), AIMEstate(AIMEi), Bi, Wstate(Wi), 0.0_8, Vgood, Vbad, Astate, AIMEstate, Wstate, Hstate, mortality_good, mortality_bad, good_to_bad, bad_to_bad, &
-                    hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, Copt, Hopt, Aopt, Bopt, valopt)
+                    hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, Copt, Hopt, Aopt, Bopt, Wopt_good, Wopt_bad, AIMEopt, valopt)
                
                Vgood(age-bornage+1_8, AIMEi, Wi, Ai, Bidx) = valopt
                optC_good(age-bornage+1_8, AIMEi, Wi, Ai, Bidx)=Copt
                optA_good(age-bornage+1_8, AIMEi, Wi, Ai, Bidx)=Aopt
                optH_good(age-bornage+1_8, AIMEi, Wi, Ai, Bidx)=Hopt
                optB_good(age-bornage+1_8, AIMEi, Wi, Ai, Bidx)=Bopt
+               optW_good_good(age-bornage+1_8, AIMEi, Wi, Ai, Bidx)=Wopt_good
+               optW_good_bad(age-bornage+1_8, AIMEi, Wi, Ai, Bidx)=Wopt_bad
+               optAIME_good(age-bornage+1_8, AIMEi, Wi, Ai, Bidx)=AIMEopt
                write(15,'(i2, a, f4.2, a, f10.2, a, i3, a, f10.2, a, i3, a, f10.2, a, i3, a, f10.2, a, f10.2, a, f10.2, a, i3, a, f18.10)')&
                     age, ',', 0.0_8, ',', Astate(Ai), ',', Ai, ',', AIMEstate(AIMEi), ',', AIMEi, ',', Wstate(Wi), ',', Wi, ',', Aopt, ',', Copt, ',', Hopt, ',', Bopt, ',', valopt
                call optmum1(age, Astate(Ai), AIMEstate(AIMEi), Bi, Wstate(Wi), 1.0_8, Vgood, Vbad, Astate, AIMEstate, Wstate, Hstate, mortality_good, mortality_bad, good_to_bad, bad_to_bad, &
-                    hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, Copt, Hopt, Aopt, Bopt, valopt)
+                    hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, Copt, Hopt, Aopt, Bopt, Wopt_good, Wopt_bad, AIMEopt, valopt)
                Vbad(age-bornage+1_8, AIMEi, Wi, Ai, Bidx) = valopt
                optC_bad(age-bornage+1_8, AIMEi, Wi, Ai, Bidx)=Copt
                optA_bad(age-bornage+1_8, AIMEi, Wi, Ai, Bidx)=Aopt
                optH_bad(age-bornage+1_8, AIMEi, Wi, Ai, Bidx)=Hopt
                optB_bad(age-bornage+1_8, AIMEi, Wi, Ai, Bidx)=Bopt
+               optW_bad_good(age-bornage+1_8, AIMEi, Wi, Ai, Bidx)=Wopt_good
+               optW_bad_bad(age-bornage+1_8, AIMEi, Wi, Ai, Bidx)=Wopt_bad
+               optAIME_bad(age-bornage+1_8, AIMEi, Wi, Ai, Bidx)=AIMEopt
                write(15,'(i2, a, f4.2, a, f10.2, a, i3, a, f10.2, a, i3, a, f10.2, a, i3, a, f10.2, a, f10.2, a, f10.2, a, i3, a, f18.10)')&
                     age, ',', 1.0_8, ',', Astate(Ai), ',', Ai, ',', AIMEstate(AIMEi), ',', AIMEi, ',', Wstate(Wi), ',', Wi, ',', Aopt, ',', Copt, ',', Hopt, ',', Bopt, ',', valopt
             end do !End B loop
@@ -244,25 +277,31 @@ do age = penage-1, bornage, -1 !age 61-30
       do Ai = 1, Anum
          do AIMEi = 1, AIMEnum      
             call optmum0(age, Astate(Ai), AIMEstate(AIMEi), Wstate(Wi), 0.0_8, Vgood, Vbad, Astate, AIMEstate, Wstate, Hstate, mortality_good, mortality_bad, good_to_bad, bad_to_bad, &
-                 hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, Copt, Hopt, Aopt, valopt)
+                 hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, Copt, Hopt, Aopt, Wopt_good, Wopt_bad, AIMEopt, valopt)
             do Bi = 1, 2
                Vgood(age-bornage+1_8, AIMEi, Wi, Ai, Bi) = valopt
                optC_good(age-bornage+1_8, AIMEi, Wi, Ai, Bi)=Copt
                optA_good(age-bornage+1_8, AIMEi, Wi, Ai, Bi)=Aopt
                optH_good(age-bornage+1_8, AIMEi, Wi, Ai, Bi)=Hopt
                optB_good(age-bornage+1_8, AIMEi, Wi, Ai, Bi)=0_8
+               optW_good_good(age-bornage+1_8, AIMEi, Wi, Ai, Bi)=Wopt_good
+               optW_good_bad(age-bornage+1_8, AIMEi, Wi, Ai, Bi)=Wopt_bad
+               optAIME_good(age-bornage+1_8, AIMEi, Wi, Ai, Bi)=AIMEopt
             end do         
             write(15,'(i2, a, f4.2, a, f10.2, a, i3, a, f10.2, a, i3, a, f10.2, a, i3, a, f10.2, a, f10.2, a, f10.2, a, i3, a, f18.10)') &
                  age, ',', 0.0_8, ',', Astate(Ai), ',', Ai, ',', AIMEstate(AIMEi), ',', AIMEi, ',', Wstate(Wi), ',', Wi, ',', Aopt, ',', Copt, ',', Hopt, ',', 0_8, ',', valopt
 
             call optmum0(age, Astate(Ai), AIMEstate(AIMEi), Wstate(Wi), 1.0_8, Vgood, Vbad, Astate, AIMEstate, Wstate, Hstate, mortality_good, mortality_bad, good_to_bad, bad_to_bad, &
-                 hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, Copt, Hopt, Aopt, valopt)
+                 hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, Copt, Hopt, Aopt, Wopt_good, Wopt_bad, AIMEopt, valopt)
             do Bi = 1,2   
                Vbad(age-bornage+1_8, AIMEi, Wi, Ai, Bi) = valopt
                optC_bad(age-bornage+1_8, AIMEi, Wi, Ai, Bi)=Copt
                optA_bad(age-bornage+1_8, AIMEi, Wi, Ai, Bi)=Aopt
                optH_bad(age-bornage+1_8, AIMEi, Wi, Ai, Bi)=Hopt
                optB_bad(age-bornage+1_8, AIMEi, Wi, Ai, Bi)=0_8
+               optW_bad_good(age-bornage+1_8, AIMEi, Wi, Ai, Bi)=Wopt_good
+               optW_bad_bad(age-bornage+1_8, AIMEi, Wi, Ai, Bi)=Wopt_bad
+               optAIME_bad(age-bornage+1_8, AIMEi, Wi, Ai, Bi)=AIMEopt
             end do
             write(15,'(i2, a, f4.2, a, f10.2, a, i3, a, f10.2, a, i3, a, f10.2, a, i3, a, f10.2, a, f10.2, a, f10.2, a, i3, a, f18.10)') &
                  age, ',', 1.0_8, ',', Astate(Ai), ',', Ai, ',', AIMEstate(AIMEi), ',', AIMEi, ',', Wstate(Wi), ',', Wi, ',', Aopt, ',', Copt, ',', Hopt, ',', 0_8, ',', valopt
@@ -304,7 +343,8 @@ end do !age loop
   close(90)
   
   call simulation_mean(A_dist, M_dist, W_dist, AIME_dist, mortality_good, mortality_bad, good_to_bad, bad_to_bad, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, &
-       optC_good, optC_bad, optA_good, optA_bad, optH_good, optH_bad, optB_good, optB_bad, Astate, Wstate, AIMEstate, prof_C_good, prof_C_bad, prof_A_good, prof_A_bad, prof_H_good, prof_H_bad, prof_B_good, prof_B_bad, prof_P_good, prof_P_bad) 
+       optC_good, optC_bad, optA_good, optA_bad, optH_good, optH_bad, optB_good, optB_bad, optW_good_good, optW_good_bad, optW_bad_good, optW_bad_bad, optAIME_good, optAIME_bad, &
+       Astate, Wstate, AIMEstate, prof_C_good, prof_C_bad, prof_A_good, prof_A_bad, prof_H_good, prof_H_bad, prof_B_good, prof_B_bad, prof_P_good, prof_P_bad) 
   
 end program main
 

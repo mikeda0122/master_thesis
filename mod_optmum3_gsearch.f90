@@ -62,10 +62,10 @@ contains
 
        call ass(1_8, income, C, laborincome, A, ss, reduc, nextperiodassets)
        
-       utils = U(C, 0.0_8, 0_1, M, 1_1)
+       utils = U(C, 0.0_8, 0_1, M, nonsep)
 !       utils = log(C)
 
-       bequestutils = beq(nextperiodassets, 1_1)
+       bequestutils = beq(nextperiodassets, nonsep)
 
        val = utils + p_beta*bequestutils
        

@@ -76,10 +76,10 @@ contains
           flag = 1_1
        end if
        
-       utils = U(C, 0.0_8, 0_1, M, 1_1)
+       utils = U(C, 0.0_8, 0_1, M, nonsep)
 !       utils = log(C)
 
-       bequestutils = beq(nextperiodassets, 1_1)
+       bequestutils = beq(nextperiodassets, nonsep)
 
        Evtgood = interp(age, nextperiodassets, 0.0_8, AIME, Vgood, Astate, Wstate, AIMEstate, Anum, Wnum, AIMEnum, currentB)
        Evtbad = interp(age, nextperiodassets, 0.0_8, AIME, Vbad, Astate, Wstate, AIMEstate, Anum, Wnum, AIMEnum, currentB)

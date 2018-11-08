@@ -10,7 +10,7 @@ module mod_parameter
     real(8), parameter :: penbensstart = 62.0_8
 
     ! utility
-    integer(1) :: nonsep
+    integer(1) :: nonsep = 1_1
     real(8) :: p_conspref
     real(8) :: p_gamc
     real(8) :: p_gamh
@@ -105,7 +105,7 @@ module mod_parameter
 
     ! grids of A
     integer(8) :: Anum =   10
-    integer(8) :: Anint    = 5  
+    integer(8) :: Anint    = 5
     real(8) :: Amax    = 600000
     real(8) :: Amin    = 0
     real(8) :: Aint    = 80000

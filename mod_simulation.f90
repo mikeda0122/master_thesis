@@ -9,7 +9,8 @@ module mod_simulation
 contains
 
   subroutine simulation_mean(A_dist, M_dist, W_dist, AIME_dist, mortality_good, mortality_bad, good_to_bad, bad_to_bad, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, optC_good, optC_bad, optA_good,&
-       & optA_bad, optH_good, optH_bad, optB_good, optB_bad, Astate, Wstate, AIMEstate, mean_prof_C_good, mean_prof_C_bad, mean_prof_A_good, mean_prof_A_bad, mean_prof_H_good, mean_prof_H_bad, mean_prof_B_good, mean_prof_B_bad, mean_prof_P_good, mean_prof_P_bad)
+       & optA_bad, optH_good, optH_bad, optB_good, optB_bad, optW_good_good, optW_good_bad, optW_bad_good, optW_bad_bad, optAIME_good, optAIME_bad, &
+       & Astate, Wstate, AIMEstate, mean_prof_C_good, mean_prof_C_bad, mean_prof_A_good, mean_prof_A_bad, mean_prof_H_good, mean_prof_H_bad, mean_prof_B_good, mean_prof_B_bad, mean_prof_P_good, mean_prof_P_bad)
 
     implicit none
         
@@ -20,6 +21,9 @@ contains
     real(8), intent(in) :: optA_good(:,:,:,:,:),  optA_bad(:,:,:,:,:)
     real(8), intent(in) :: optH_good(:,:,:,:,:),  optH_bad(:,:,:,:,:)
     integer(8), intent(in) :: optB_good(:,:,:,:,:),  optB_bad(:,:,:,:,:)
+    real(8), intent(in) :: optW_good_good(:,:,:,:,:),  optW_good_bad(:,:,:,:,:)
+    real(8), intent(in) :: optW_bad_good(:,:,:,:,:),  optW_bad_bad(:,:,:,:,:)
+    real(8), intent(in) :: optAIME_good(:,:,:,:,:),  optAIME_bad(:,:,:,:,:)
     real(8), intent(in) :: Astate(:), Wstate(:), AIMEstate(:)
     
     real(8), intent(out) :: mean_prof_C_good(:), mean_prof_C_bad(:)
@@ -65,7 +69,8 @@ contains
     do i = 1, n
 
        call trac_lifecycle(A_dist(i), M_dist(i), W_dist(i), AIME_dist(i), i, n, mortality_good, mortality_bad, good_to_bad, bad_to_bad, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr,&
-           optC_good, optC_bad, optA_good, optA_bad, optH_good, optH_bad, optB_good, optB_bad, Astate, Wstate, AIMEstate, wshock_vector, death_age, health, prof_C, prof_A, prof_H, prof_B)
+            optC_good, optC_bad, optA_good, optA_bad, optH_good, optH_bad, optB_good, optB_bad, optW_good_good, optW_good_bad, optW_bad_good, optW_bad_bad, optAIME_good, optAIME_bad, &
+            Astate, Wstate, AIMEstate, wshock_vector, death_age, health, prof_C, prof_A, prof_H, prof_B)
 
        do age = 1, dieage-bornage+1
           if (age+bornage-1<death_age) then
@@ -123,7 +128,8 @@ contains
   end subroutine simulation_mean
   
   subroutine trac_lifecycle(A0, M0, W0, AIME0, id, numind, mortality_good, mortality_bad, good_to_bad, bad_to_bad, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr,&
-       optC_good, optC_bad, optA_good, optA_bad, optH_good, optH_bad, optB_good, optB_bad, Astate, Wstate, AIMEstate, wshock_vector, death_age, health, prof_C, prof_A, prof_H, prof_B)
+       optC_good, optC_bad, optA_good, optA_bad, optH_good, optH_bad, optB_good, optB_bad, optW_good_good, optW_good_bad, optW_bad_good, optW_bad_bad, optAIME_good, optAIME_bad, &
+       Astate, Wstate, AIMEstate, wshock_vector, death_age, health, prof_C, prof_A, prof_H, prof_B)
 
     implicit none
 
@@ -135,6 +141,9 @@ contains
     real(8), intent(in) :: optA_good(:,:,:,:,:), optA_bad(:,:,:,:,:)
     real(8), intent(in) :: optH_good(:,:,:,:,:), optH_bad(:,:,:,:,:)
     integer(8), intent(in) :: optB_good(:,:,:,:,:), optB_bad(:,:,:,:,:)
+    real(8), intent(in) :: optW_good_good(:,:,:,:,:),  optW_good_bad(:,:,:,:,:)
+    real(8), intent(in) :: optW_bad_good(:,:,:,:,:),  optW_bad_bad(:,:,:,:,:)
+    real(8), intent(in) :: optAIME_good(:,:,:,:,:),  optAIME_bad(:,:,:,:,:)
     real(8), intent(in) :: Astate(:), Wstate(:), AIMEstate(:)
     real(8), intent(in) :: wshock_vector(:)
 
@@ -180,15 +189,33 @@ contains
           Bindex = prvB + 1_8
           
           !Optimal choice and next period's assets. 
-          if(health(age-bornage+1)==0.0) then
+          if(health(age-bornage+1)==0.0_8) then
              prvA = optA_good(age-bornage+1, AIMEindex, Windex, Aindex, Bindex)
              prvB = optB_good(age-bornage+1, AIMEindex, Windex, Aindex, Bindex)
+             prvAIME = optAIME_good(age-bornage+1, AIMEindex, Windex, Aindex, Bindex)
+             if (health(age-bornage+1+1)==0.0_8) then
+                prvW = optW_good_good(age-bornage+1, AIMEindex, Windex, Aindex, Bindex)+rwage(age-bornage+1)
+             else if (health(age-bornage+1+1)==1.0_8) then
+                prvW = optW_good_bad(age-bornage+1, AIMEindex, Windex, Aindex, Bindex)+rwage(age-bornage+1)
+             else
+                write(*,*) 'something is wrong with sim health!!'
+                read*
+             end if
              
              prof_C(age-bornage+1) = optC_good(age-bornage+1, AIMEindex, Windex, Aindex, Bindex)
              prof_H(age-bornage+1) = optH_good(age-bornage+1, AIMEindex, Windex, Aindex, Bindex)
           else if (health(age-bornage+1)==1.0_8) then
              prvA = optA_bad(age-bornage+1, AIMEindex, Windex, Aindex, Bindex)
              prvB = optB_bad(age-bornage+1, AIMEindex, Windex, Aindex, Bindex)
+             prvAIME = optAIME_bad(age-bornage+1, AIMEindex, Windex, Aindex, Bindex)
+             if (health(age-bornage+1+1)==0.0_8) then
+                prvW = optW_bad_good(age-bornage+1, AIMEindex, Windex, Aindex, Bindex)+rwage(age-bornage+1)
+             else if (health(age-bornage+1+1)==1.0_8) then
+                prvW = optW_bad_bad(age-bornage+1, AIMEindex, Windex, Aindex, Bindex)+rwage(age-bornage+1)
+             else
+                write(*,*) 'something is wrong with sim health!!'
+                read*
+             end if
              
              prof_C(age-bornage+1) = optC_bad(age-bornage+1, AIMEindex, Windex, Aindex, Bindex)
              prof_H(age-bornage+1) = optH_bad(age-bornage+1, AIMEindex, Windex, Aindex, Bindex)
@@ -198,58 +225,6 @@ contains
           end if
           prof_A(age-bornage+1) = prvA
           prof_B(age-bornage+1) = prvB             
-
-          !compute next period's wage
-          if (age <= 68) then
-             if (health(age-bornage+1)==0.0_8 .and. health(age-bornage+1+1)==0.0_8) then
-                dwage = exp( (rhow*log(Wstate(Windex))) + ((1.0d0 - rhow)*hlogwage(age-bornage+1))) * (exp(hhgr(age-bornage+1)))
-             else if (health(age-bornage+1)==0.0_8 .and. health(age-bornage+1+1)==1.0_8) then
-                dwage = exp( (rhow*log(Wstate(Windex))) + ((1.0d0 - rhow)*hlogwage(age-bornage+1))) * (exp(hugr(age-bornage+1)))
-             else if (health(age-bornage+1)==1.0_8 .and. health(age-bornage+1+1)==0.0_8) then
-                dwage = exp( (rhow*log(Wstate(Windex))) + ((1.0d0 - rhow)*ulogwage(age-bornage+1))) * (exp(uhgr(age-bornage+1)))
-             else if (health(age-bornage+1)==1.0_8 .and. health(age-bornage+1+1)==1.0_8) then
-                dwage = exp( (rhow*log(Wstate(Windex))) + ((1.0d0 - rhow)*ulogwage(age-bornage+1))) * (exp(uugr(age-bornage+1)))
-             else
-                print*, 'This is not what you want!! health'
-                read*
-             end if
-             prvW = dwage + rwage(age-bornage+1)
-          else if (age<=dieage) then
-             prvW = Wstate(1)
-          else
-             print*, 'This is not what you want! age'
-             read*
-          end if
-
-          !compute next period's AIME
-          if (age<=61) then
-             laborincome = Wstate(Windex)*prof_H(age-bornage+1)
-             call computeAIME(AIMEstate(AIMEindex), laborincome, age, 0_8, prvAIME)
-          else if (age<65) then
-             laborincome = Wstate(Windex)*prof_H(age-bornage+1)
-             if (prof_B(age-bornage+1)>prof_B(age-bornage+1-1)) then
-                call getadj(age, prvB, cumadj2, eretadj, bigcred, cumeretadj, litcred)
-                call computeAIME(cumeretadj*AIMEstate(AIMEindex), laborincome, age, 0_8, prvAIME)
-                
-             else
-                call computeAIME(AIMEstate(AIMEindex), laborincome, age, 0_8, prvAIME)
-             end if
-          else if (age<70) then
-             laborincome = Wstate(Windex)*prof_H(age-bornage+1)     
-             if (prof_B(age-bornage+1)>prof_B(age-bornage+1-1)) then
-                call getadj(age, prvB, cumadj2, eretadj, bigcred, cumeretadj, litcred)
-                call computeAIME((1.0_8+litcred)*AIMEstate(AIMEindex), laborincome, age, 0_8, prvAIME)
-            
-             else
-                call computeAIME(AIMEstate(AIMEindex), laborincome, age, 0_8, prvAIME)
-             end if
-          else if (age<=94) then
-             prvAIME = AIMEstate(AIMEindex)
-          else if (age==95) then
-             prvAIME = AIMEstate(1)
-          else
-             print*, 'something is wrong!! sim AIME'
-          end if
              
           death_age = death_age+1.0_8
        else
