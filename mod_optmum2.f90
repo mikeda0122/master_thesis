@@ -13,7 +13,7 @@ module mod_optmum2
 
 contains
 
-  subroutine optmum2(age, A, AIME, M, Vgood, Vbad, Astate, Wstate, AIMEstate, mortality_good, mortality_bad, good_to_bad, bad_to_bad, Copt, Aopt, valopt)
+  subroutine optmum2(age, A, AIME, M, Vgood, Vbad, Astate, Wstate, AIMEstate, mortality_good, mortality_bad, good_to_bad, bad_to_bad, Copt, Aopt, Iopt, pbopt, ssopt, valopt)
 
     implicit none
 
@@ -25,7 +25,7 @@ contains
     real(8), intent(in) :: Astate(:), Wstate(:), AIMEstate(:)
     real(8), intent(in) :: mortality_good(:), mortality_bad(:), good_to_bad(:), bad_to_bad(:)
 
-    real(8), intent(out) :: valopt, Copt, Aopt
+    real(8), intent(out) :: valopt, Copt, Aopt, Iopt, pbopt, ssopt
 
     integer(1) :: flag
     integer(8) :: Ci, i
@@ -43,7 +43,9 @@ contains
     PIA = computePIA(AIME)
     ss = PIA
     pb = predictpensionbenefits(PIA, age)
-    laborincome = 0.0_8
+!    pb = 2*pb
+!    pb = 0.0_8
+    laborincome = 0.0_8 
     income = computeaftertaxincome(laborincome, A, MTR, 0.0_8, pb, taxtype, age)
 
     cashonhand = ss + income + A
@@ -92,7 +94,7 @@ contains
        else if (M==1.0_8) then
           
           Evtpo = ((1.0_8 - mortality_bad(age-20+1))*((1.0_8-bad_to_bad(age-20+1))*Evtgood &
-               & + bad_to_bad(age-20+1)*Evtbad))+ mortality_good(age-20+1)*bequestutils
+               & + bad_to_bad(age-20+1)*Evtbad))+ mortality_bad(age-20+1)*bequestutils
        else
           write(*,*) 'Health is neither 0 nor 1!!'
        end if
@@ -108,6 +110,9 @@ contains
        if (val > valopt .and. flag==0_1) then
           Copt = C
           Aopt = nextperiodassets
+          Iopt = income
+          pbopt = pb
+          ssopt = ss
           valopt = val
        end if
 

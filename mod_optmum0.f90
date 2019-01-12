@@ -2,18 +2,23 @@ module mod_optmum0
 
   use mod_parameter
   use mod_makegrids
+  use mod_computelaborincome
   use mod_computeAfterTaxIncome
   use mod_computeaime
+  use mod_computePIA
   use mod_ass
+  use mod_pension
   use mod_utility
   use mod_interp
   use mod_integral
-
+  use mod_sprob
+  
   implicit none
 
 contains
 
-  subroutine optmum0(age, A, AIME, W, M, Vgood, Vbad, Astate, AIMEstate, Wstate, Hstate, mortality_good, mortality_bad, good_to_bad, bad_to_bad, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, Copt, Hopt, Aopt, Wopt_good, Wopt_bad, AIMEopt, valopt)
+  subroutine optmum0(age, A, AIME, W, M, Vgood, Vbad, Astate, AIMEstate, Wstate, Hstate, mortality_good, mortality_bad, good_to_bad, bad_to_bad, &
+       hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, gvec, ageshift, Copt, Hopt, Aopt, Wopt_good, Wopt_bad, AIMEopt, Iopt, valopt)
 
     implicit none
 
@@ -25,8 +30,9 @@ contains
     real(8), intent(in) :: Astate(:) , AIMEstate(:), Hstate(:), Wstate(:)
     real(8), intent(in) :: mortality_good(:), mortality_bad(:), good_to_bad(:), bad_to_bad(:)
     real(8), intent(in) :: hlogwage(:), ulogwage(:), hhgr(:), hugr(:), uhgr(:), uugr(:)
-
-    real(8), intent(out) :: valopt, Copt, Hopt, Aopt, Wopt_good, Wopt_bad, AIMEopt
+    real(8), intent(in) :: gvec(:), ageshift(:)
+    
+    real(8), intent(out) :: valopt, Copt, Hopt, Aopt, Wopt_good, Wopt_bad, AIMEopt, Iopt
 
     integer(1) :: flag
     integer(8) :: Ci, Hi, i, Wi
@@ -35,7 +41,8 @@ contains
     real(8) :: H
     integer(8) :: currentB
     integer(1) :: particip
-    real(8) :: laborincome, income, cashonhand, pb, ss
+    real(8) :: laborincome, income, cashonhand, pb, PIA, ss
+    real(8) :: penacc1, penacc2, nextpenbenpred, penbenpred, nextPIA
     real(8) :: MTR, reduc
     real(8) :: nextperiodassets, nextperiodAIME, utils, bequestutils
     real(8) :: wtpogood, wtpobad
@@ -43,7 +50,8 @@ contains
 
     valopt = -10000000000.0_8
     currentB = 0_8
-    pb = 0.0_8
+    PIA = computePIA(AIME)
+    pb = predictpensionbenefits(PIA, age)
     ss = 0.0_8
     
     do Hi = 1, Hnum
@@ -57,13 +65,7 @@ contains
           read*
        end if
 
-       if (M==0.0_8) then
-          laborincome = H*W
-       else if (M==1.0_8) then
-          laborincome = H*W
-       else
-          write(*,*) 'Health is neither 0 nor 1!!'
-       end if
+       laborincome = computelaborincome(W, H)
 
        income = computeaftertaxincome(laborincome, A, MTR, W, pb, taxtype, age)
 
@@ -89,6 +91,16 @@ contains
 
           call ass(currentB, income, C, laborincome, A, ss, reduc, nextperiodassets)
 
+!         if (age==penage-1) then
+!             call computepenaccrue(age, ageshift, laborincome, penacc1)
+!             nextPIA = computePIA(nextperiodAIME)
+!             nextpenbenpred = predictpensionbenefits(nextPIA, penbensstart+1)
+!             penbenpred = predictpensionbenefits(PIA, penbensstart+1)
+!             penacc2 = nextpenbenpred - penbenpred
+!             penacc2=penacc2*gvec(age-bornage+1)
+!             nextperiodassets=nextperiodassets+penacc1-penacc2
+!          end if
+          
           utils = U(C, H, particip, M, nonsep)
           !                utils = log(C) + log(H)
 
@@ -123,6 +135,7 @@ contains
              Wopt_good = wtpogood
              Wopt_bad = wtpobad
              AIMEopt = nextperiodAIME
+             Iopt = income
              valopt = val
           end if
 

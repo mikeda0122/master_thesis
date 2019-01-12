@@ -23,46 +23,52 @@ contains
     implicit none
     integer(8), intent(in) :: B
     real(8), intent(in) :: AfterTaxIncome, c, laborincome, A
-    real(8), intent(inout) :: ss
+    real(8), intent(in) :: ss
     real(8), intent(out) :: reduc
     real(8), intent(out) :: nextass
-    real(8) :: ssearntest
+    real(8) :: ssearntest, redss
 
 
 
     ! didn't apply for benefits
 
     if (B == 0) then
-      nextass = A + AfterTaxIncome - c
-      reduc = 0.0_8
+       nextass = A + AfterTaxIncome - c
+       reduc = 0.0_8
 
     ! earnings below earnings test threshold levels
-  else if (laborincome < earnlev .and. B == 1) then  !See algrs55.src line 195
-        nextass = A + ss + AfterTaxIncome - c
-        reduc = 0.0_8
-      if (nextass > Amax) then
-         nextass = Amax
-      end if
-
+    else if (laborincome < earnlev .and. B == 1) then  !See algrs55.src line 195
+       nextass = A + ss + AfterTaxIncome - c
+       reduc = 0.0_8
+       if (nextass > Amax) then
+          nextass = Amax
+       end if
+      
     ! only part of benefits are reduced
 
     else if ((laborincome - earnlev) * taxfrac < ss .and. B == 1) then   !taxfrac: 0.5 or 0 *see algs55.src line 195
-      ssearntest = (laborincome - earnlev) * taxfrac    ! lost benefits
-      reduc = ssearntest / ss    ! fraction of the benefits reduced
-      ss = ss - ssearntest
-      nextass = A + AfterTaxIncome + ss - c    ! ss: post-reduction value of ssbenes
-      if (nextass > Amax) then
-        nextass = Amax
-      end if
+       ssearntest = (laborincome - earnlev) * taxfrac    ! lost benefits
+       reduc = ssearntest / ss    ! fraction of the benefits reduced
+       redss = ss - ssearntest
+       nextass = A + AfterTaxIncome + redss - c    ! ss: post-reduction value of ssbenes
+       if (nextass > Amax) then
+          nextass = Amax
+       end if
 
+       if (reduc==0.0 .and. laborincome/=6000.0_8) then
+          write(*,*) 'laborincome', laborincome
+          write(*,*) 'reduc', reduc
+       end if
+       
     ! all benefits are reduced
 
     else
-    nextass = A + AfterTaxIncome - c
-    reduc = 1.0_8
-      if (nextass > Amax) then
-         nextass = Amax
-      end if
+       nextass = A + AfterTaxIncome - c
+       reduc = 1.0_8
+       if (nextass > Amax) then
+          nextass = Amax
+       end if
+
     endif
 
     return

@@ -7,8 +7,14 @@ module mod_parameter
     real(8), parameter :: pb1 = (.3146)*.68
     real(8), parameter :: pb2 = (2.824)*.68
     real(8), parameter :: pbbk = 5000
-    real(8), parameter :: penbensstart = 62.0_8
+    integer(8), parameter :: penbensstart = 55_8
 
+    real(8), parameter :: pax = 0.63
+    real(8), parameter :: pa0 = 0.0334*0.4
+    real(8), parameter :: pa1 = .0000028*0.4
+    real(8), parameter :: pa2 = .0988*.4
+    real(8), parameter :: pabk = 23000
+    
     ! utility
     integer(1) :: nonsep = 1_1
     real(8) :: p_conspref
@@ -24,7 +30,7 @@ module mod_parameter
     real(8) :: p_beqk
 
     !tiedwage
-    integer(8) :: tiedwage
+    integer(8) :: tiedwage = 0_8 
 
     real(8), parameter :: ror = 0.04d0
     !Spouse income coefficients
@@ -37,12 +43,12 @@ module mod_parameter
     real(8), parameter :: spilnw = 9128.822
 
     ! Tax brackets and marginal tax rates
-    real(8), parameter :: tbk1 = 4440.d0
-    real(8), parameter :: tbk2 = 6940.d0
-    real(8), parameter :: tbk3 = 27440.d0
-    real(8), parameter :: tbk4 = 42440.d0
-    real(8), parameter :: tbk5 = 43800.d0
-    real(8), parameter :: tbk6 = 84440.d0
+    real(8), parameter :: tbk1 = 4440.0_8
+    real(8), parameter :: tbk2 = 6940.0_8
+    real(8), parameter :: tbk3 = 27440.0_8
+    real(8), parameter :: tbk4 = 42440.0_8
+    real(8), parameter :: tbk5 = 43800.0_8
+    real(8), parameter :: tbk6 = 84440.0_8
     !marginal taxes and ati, with SS
     real(8), parameter :: mtr1 = 0.0715d0
     real(8), parameter :: mtr2 = 0.204d0
@@ -61,21 +67,39 @@ module mod_parameter
     real(8), parameter :: ati6 = 55506.d0
 
     ! marginal taxes and ati, with SS taxes reduced 20%
-    real(8), parameter :: mtr1a = 0.0611d0
-    real(8), parameter :: mtr2a = 0.1936d0
-    real(8), parameter :: mtr3a = 0.2936d0
-    real(8), parameter :: mtr4a = 0.3875d0
-    real(8), parameter :: mtr5a = 0.4635d0
-    real(8), parameter :: mtr6a = 0.4023d0
-    real(8), parameter :: mtr7a = 0.4395d0
+!    real(8), parameter :: mtr1a = 0.0611d0
+!    real(8), parameter :: mtr2a = 0.1936d0
+!    real(8), parameter :: mtr3a = 0.2936d0
+!    real(8), parameter :: mtr4a = 0.3875d0
+!    real(8), parameter :: mtr5a = 0.4635d0
+!    real(8), parameter :: mtr6a = 0.4023d0
+!    real(8), parameter :: mtr7a = 0.4395d0
     !  After-tax income at bracket points:
     !  ati(j) = ati(j-1) + [1-mtr(j)]*[tbk(j)-tbk(j-1)]
-    real(8), parameter :: ati1a = 4169.d0
-    real(8), parameter :: ati2a = 6185.d0
-    real(8), parameter :: ati3a = 21753.d0
-    real(8), parameter :: ati4a = 30941.d0
-    real(8), parameter :: ati5a = 31672.d0
-    real(8), parameter :: ati6a = 55962.d0
+!    real(8), parameter :: ati1a = 4169.d0
+!    real(8), parameter :: ati2a = 6185.d0
+!    real(8), parameter :: ati3a = 21753.d0
+!    real(8), parameter :: ati4a = 30941.d0
+!    real(8), parameter :: ati5a = 31672.d0
+!    real(8), parameter :: ati6a = 55962.d0
+
+    ! marginal taxes and ati, without SS
+    real(8), parameter :: mtr1a = 0.0055d0
+    real(8), parameter :: mtr2a = 0.139d0
+    real(8), parameter :: mtr3a = 0.185d0
+    real(8), parameter :: mtr4a = 0.3309d0
+    real(8), parameter :: mtr5a = 0.4078d0
+    real(8), parameter :: mtr6a = 0.4023d0
+    real(8), parameter :: mtr7a = 0.4395d0
+   !  After-tax income at bracket points:
+   !  ati(j) = ati(j-1) + [1-mtr(j)]*[tbk(j)-tbk(j-1)]
+    real(8), parameter :: ati1a = 4416.d0
+    real(8), parameter :: ati2a = 6569.d0
+    real(8), parameter :: ati3a = 23277.d0
+    real(8), parameter :: ati4a = 33314.d0
+    real(8), parameter :: ati5a = 34119.d0
+    real(8), parameter :: ati6a = 58409.d0
+    
 
     real(8), parameter :: AIMEbk1 = 3720.0_8
     real(8), parameter :: AIMEbk2 = 22392.0_8
@@ -97,18 +121,20 @@ module mod_parameter
     real(8) :: Wint    = 15
 
     !grids of H
-    integer(8) :: Hnum    = 10
-    integer(8) :: Hnint    = 5
+    integer(8) :: Hnum    = 7
+    integer(8) :: Hnint    = 4
     real(8) :: Hmax    = 4000
-    real(8) :: Hmin    = 0
+    real(8) :: Hmin    = 500
     real(8) :: Hint    = 2000
 
     ! grids of A
-    integer(8) :: Anum =   10
-    integer(8) :: Anint    = 5
+    integer(8) :: Anum =   30
+    integer(8) :: Anint    = 15
+!    integer(8) :: Anum =   10
+!    integer(8) :: Anint    = 5
     real(8) :: Amax    = 600000
     real(8) :: Amin    = 0
-    real(8) :: Aint    = 80000
+    real(8) :: Aint    = 90000
 
     ! grids of AIME
     integer(8) :: AIMEnum  =  10
@@ -124,7 +150,8 @@ module mod_parameter
 
     real(8) :: p_beta
     real(8) :: cfloor = 1.0_8
-    integer(8) :: Cnum = 100
+    integer(8) :: Cnum = 180
+!    integer(8) :: Cnum = 80
 
     ! age parameters
     real(8) :: L = 5280  ! Time endowment: hours/year
@@ -140,6 +167,7 @@ module mod_parameter
     integer(8) :: dieage = 95
     integer(8) :: mappage = 70  ! Age by which everyone will apply for SS benefits
     integer(8) :: penage = 62  ! Age of first pension benefits
+    integer(8) :: firstpen = 62 !Age of first pension benefits
     integer(8) :: eret = 62 !early retirement age
     integer(8) :: nret = 65 !normal retirement age
     integer(8) :: etstage = 70 !From this age, SS benefits don't face earnings test
@@ -151,6 +179,9 @@ module mod_parameter
 
 
 !early application penalty Factors
+!real(8) :: eretadj64 = 0.93333
+!real(8) :: eretadj63 = 0.9286
+!real(8) :: eretadj62 = 0.92308
 real(8) :: eretadj64 = 0.93333
 real(8) :: eretadj63 = 0.9286
 real(8) :: eretadj62 = 0.92308
@@ -174,7 +205,11 @@ integer(1) :: taxtype = 0
 
 !integral part
 real(8):: wnodes(1:5) = (/ -2.02018287d0, -0.9585724646d0, 0.0d0, 0.9585724646d0, 2.02018287d0 /)
+!real(8):: wnodes(1:7) = (/ -2.651961356, -1.673551628, - 0.8162878828, 0.0_8, 0.8162878828, 1.673551628, 2.651961356 /)
 real(8):: wwgts(1:5) = (/ 0.01995624205d0, 0.3936193231d0, 0.9453087204d0, 0.3936193231d0, 0.01995624205d0 /)
+!real(8):: wwgts(1:7) = (/  0.000971781245, 0.05451558281, 0.4256072526, 0.8102646175, 0.4256072526, 0.05451558281, 0.000971781245 /)
+integer(8), parameter::  wnodenum = 5
 real(8):: pi  = 4 * atan (1.0_8)
 real(8):: rhow     = 0.977
+real(8):: stderr = 0.12_8
 end module

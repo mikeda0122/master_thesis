@@ -2,6 +2,7 @@ module mod_optmum1
 
   use mod_parameter
   use mod_makegrids
+  use mod_computelaborincome
   use mod_computeAfterTaxIncome
   use mod_computeAIME
   use mod_computePIA
@@ -11,15 +12,17 @@ module mod_optmum1
   use mod_interp
   use mod_integral
   use mod_getadj
+  use mod_sprob
 
   implicit none
 
 contains
 
-  subroutine optmum1(age, A, AIME, B, W, M, Vgood, Vbad, Astate, AIMEstate, Wstate, Hstate, mortality_good, mortality_bad, good_to_bad, bad_to_bad, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, Copt, Hopt, Aopt, Bopt, Wopt_good, Wopt_bad, AIMEopt, valopt)
+  subroutine optmum1(age, A, AIME, B, W, M, Vgood, Vbad, Astate, AIMEstate, Wstate, Hstate, &
+       mortality_good, mortality_bad, good_to_bad, bad_to_bad, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, gvec, ageshift, Copt, Hopt, Aopt, Bopt, Wopt_good, Wopt_bad, AIMEopt, Iopt, pbopt, ssopt, valopt)
 
     implicit none
-    
+
     integer(8), intent(in) :: age
     real(8), intent(in) :: A, AIME, W
     integer(8), intent(in) :: B
@@ -28,8 +31,9 @@ contains
     real(8), intent(in) :: Astate(:) , AIMEstate(:), Hstate(:), Wstate(:)
     real(8), intent(in) :: mortality_good(:), mortality_bad(:), good_to_bad(:), bad_to_bad(:)
     real(8), intent(in) :: hlogwage(:), ulogwage(:), hhgr(:), hugr(:), uhgr(:), uugr(:)
+    real(8), intent(in) :: gvec(:), ageshift(:)
 
-    real(8), intent(out) :: valopt, Copt, Hopt, Aopt, Wopt_good, Wopt_bad, AIMEopt
+    real(8), intent(out) :: valopt, Copt, Hopt, Aopt, Wopt_good, Wopt_bad, AIMEopt, Iopt, pbopt, ssopt
     integer(8), intent(out) :: Bopt
 
     integer(1) :: flag
@@ -39,51 +43,45 @@ contains
     real(8) :: H
     integer(8) :: currentB
     real(8) :: cumadj2, eretadj, bigcred, cumeretadj, litcred
-    integer(1) :: particip
+    integer(1) :: particip, apply
     real(8) :: PIA, ss, ss2, pb, laborincome, income, cashonhand, adjAIME
+    real(8) :: penacc1, penacc2, nextpenbenpred, penbenpred, nextPIA
+    real(8) :: tempnextAIME, tempnextPIA, earlyretirement, makeadjust
     real(8) :: MTR, reduc
     real(8) :: nextperiodassets, nextperiodAIME, utils, bequestutils
     real(8) :: wtpogood, wtpobad
     real(8) :: Evtgood, Evtbad, Evtpo, val
 
     valopt = -10000000000.0_8
-
-    PIA = computePIA(AIME)
-    pb = predictpensionbenefits(PIA, age)
-
+     
     do Bi = 0, 1
 
-       if (age == 62) then
-          currentB = Bi
-          call getadj(62_8, currentB, cumadj2, eretadj, bigcred, cumeretadj, litcred)
-          if (currentB==1_8) then
-             adjAIME = cumeretadj*AIME
-             adjAIME = AIME
-          else
-             adjAIME = AIME
-          end if
-
-       else if(B == 1_8) then
+       if(B == 1_8) then
           currentB = B
-          adjAIME = AIME
+          apply = 0_8
        else
           currentB = Bi
-          call getadj(age, currentB, cumadj2, eretadj, bigcred, cumeretadj, litcred)
-          if ( age < 65 .and. currentB==1_8) then
-             adjAIME = cumeretadj * AIME
-             adjAIME = AIME
-          else if (currentB==1_8) then
-             adjAIME = (1+litcred) * AIME
-             adjAIME = AIME
+          if (currentB==1_8) then
+             apply = 1_8
           else
-             adjAIME = AIME
+             apply = 0_8
           end if
        end if
        
+       PIA = computePIA(AIME)
+       ss = currentB*PIA
+              
+       call getadj(age, currentB, cumadj2, eretadj, bigcred, cumeretadj, litcred)
+      
+!       if (apply==1_8 .and. age<nret) then
+       if (currentB == 1_8 .and. age<nret) then
+          ss = ss*cumeretadj
+       end if
+
        do Hi = 1, Hnum
 
           H = Hstate(Hi)
-
+          
           if (H > 0.0_8) then
              particip = 1_1
           else if (H == 0.0_8) then
@@ -93,21 +91,15 @@ contains
              read*
           end if
 
-          PIA = computePIA(adjAIME)
-          ss = currentB*PIA
-          
-          laborincome = H*W
+          laborincome = computelaborincome(W, H)
 
+          PIA = computePIA(AIME)
+          pb = predictpensionbenefits(PIA, age)
+          
           income = computeaftertaxincome(laborincome, A, MTR, W, pb, taxtype, age)
 
-          !if (currentB==0_8) then
-          call computeAIME(adjAIME, laborincome, age, currentB, nextperiodAIME)
-          !else if (currentB==1_8) then
-          !   nextperiodAIME = adjAIME
-          !else
-          !   write(*,*) 'something is wrong with nextperiodAIME!! in optmum1'
-          !   read*
-          !end if
+          call computeAIME(AIME, laborincome, age, currentB, tempnextAIME)
+          tempnextPIA = computePIA(tempnextAIME)
 
           cashonhand = ss + income + A
           flag = 0_1
@@ -127,9 +119,53 @@ contains
                 C = cfloor
              end if
 
+             !Compute next period's AIME with adujustment if necessary
+
              call ass(currentB, income, C, laborincome, A, ss, reduc, nextperiodassets)
+
+             earlyretirement = 1.0_8
+             makeadjust = 0.0_8
+                         
+             if (currentB==1_8 .and. age<nret) then
+                earlyretirement = earlyretirement*eretadj
+!                earlyretirement = earlyretirement*cumeretadj
+                makeadjust = 1.0_8
+             else if (currentB==0_8 .and. age>=nret) then
+                earlyretirement = earlyretirement*(1+litcred)
+                makeadjust = 1.0_8
+             end if
+
+             if (currentB==1_8) then
+                if(age<nret) then
+                   earlyretirement = earlyretirement*(1+bigcred*reduc)
+!                   earlyretirement = earlyretirement*(1+bigcred)
+                else if (age>=nret) then
+                   earlyretirement = earlyretirement*(1+litcred*reduc)
+!                   earlyretirement = earlyretirement*(1+litcred)
+                else
+                   write(*,*) 'something wrong with earlyretirement!!'
+                end if
+                makeadjust = 1.0_8
+             end if
+
+             if (makeadjust==1.0_8) then
+                call getnextPIA(tempnextPIA, earlyretirement, nextPIA)
+!                nextPIA = tempnextPIA
+                nextperiodAIME = findAIME(nextPIA)
+             else
+                call computeAIME(AIME, laborincome, age, currentB, nextperiodAIME)
+             end if
+
+             !adjust next period assets based on pension accrue
+             call computepenaccrue(age, ageshift, laborincome, penacc1)
+             nextPIA = computePIA(nextperiodAIME)
+             nextpenbenpred = predictpensionbenefits(nextPIA, penbensstart+1)
+             penbenpred = predictpensionbenefits(PIA, penbensstart+1)
+             penacc2 = nextpenbenpred - penbenpred
+             penacc2=penacc2*gvec(age + 1-bornage)
+             nextperiodassets=nextperiodassets+penacc1-penacc2
+
              utils = U(C, H, particip, M, nonsep)
-             !utils = log(C) + log(H)
 
              bequestutils = beq(nextperiodassets, nonsep)
 
@@ -151,7 +187,7 @@ contains
              !write(*,*) Hi, Bi, Ci
              !end if
 
-             Evtbad = integral(age, nextperiodassets, wtpogood, nextperiodAIME, Vbad, Astate, Wstate, AIMEstate, currentB)
+             Evtbad = integral(age, nextperiodassets, wtpobad, nextperiodAIME, Vbad, Astate, Wstate, AIMEstate, currentB)
              !end if
 
              if(M == 0.0_8) then
@@ -160,16 +196,12 @@ contains
              else if (M==1.0_8) then
                 Evtpo = ((1.0_8-mortality_bad(age-20+1))*((1.0_8-bad_to_bad(age-20+1))*Evtgood &
                      +bad_to_bad(age-20+1)*Evtbad) + mortality_bad(age-20+1)*bequestutils)
-             else                
+             else
                 write(*,*) 'Health is neither 0 nor 1!!'
              end if
 
-
-             !write(*,*) Evt
-
              !write(*,*) mortality(age-20+1)
 
-             !write(*,*) Evtpo
              !read*
 
              val = utils + p_beta*Evtpo
@@ -181,21 +213,20 @@ contains
                 Wopt_good = wtpogood
                 Wopt_bad = wtpobad
                 AIMEopt = nextperiodAIME
+                Iopt = income
+                pbopt = pb
+                ssopt = ss
                 valopt = val
              end if
 
           end do !End Ci loop
-       end do !End Bi loop
-    end do !End Hi loop
+       end do !End Hi loop
 
-  end subroutine optmum1  
+       if (age>=62 .and. B==1_8 .and. Bi==0_8) then
+          exit
+       end if
+
+    end do !End Bi loop
+
+  end subroutine optmum1
 end module mod_optmum1
-
-
-
-
-
-
-
-
-

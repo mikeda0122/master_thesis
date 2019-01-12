@@ -38,12 +38,14 @@ function integral(age, nextperiodassets, W, nextperiodAIME, V, Astate, Wstate, A
       real(8), intent(out):: vint
       real(8) :: ev, wage
       integer :: i
-      integer(1), parameter::  wnodenum = 5
+      real(8) :: nodes(wnodenum)
+      
     wage=0.0_8
     vint=0.0_8
     do i = 1, wnodenum
-       wage= W+sqrt(2*0.0141)*wnodes(i) !wage = (sqrt(2) * sigma * wnodes(i) + mu) ,where (mu, sigma^2) = (0, 0.0141)
-       !wage= W*wnodes(i)
+       !wage= W+sqrt(2*0.0141)*wnodes(i) !wage = (sqrt(2) * sigma * wnodes(i) + mu) ,where (mu, sigma^2) = (0, 0.0141)
+       nodes(i) = exp(sqrt(2.0_8)*stderr*wnodes(i))
+       wage= W*nodes(i)
         ev=interp(age, nextperiodassets, wage, nextperiodAIME, V, Astate, Wstate, AIMEstate, Anum, Wnum, AIMEnum, Bi)
         vint=vint+ev*wwgts(i)
     enddo

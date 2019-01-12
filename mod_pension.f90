@@ -1,32 +1,38 @@
 module mod_pension
+  
     use mod_parameter
 
     implicit none
-    real(8) :: pabk, pax, pa0, pa1, pa2, ageshift
+
     real(8) :: penavailage, pencfs
 
 contains
 
-  subroutine computepenaccure(laborincome, penaccrue)    ! see Eric (2003) equation 37
+  subroutine computepenaccrue(age, ageshift, laborincome, penaccrue)
+    ! see Eric (2003) equation 37
+    
     implicit none
-    real(8), intent(in) :: laborincome
+
+    integer(8), intent(in) :: age
+    real(8), intent(in) :: ageshift(:), laborincome
     real(8), intent(out) :: penaccrue
 
+    
     if (laborincome < 0.0_8) then
       penaccrue = 0.0_8
       return
     end if
 
     if (laborincome < pabk) then
-      penaccrue = pax * (pa0 + pa1 * laborincome) * ageshift * laborincome
+      penaccrue = pax * (pa0 + pa1 * laborincome) * ageshift(age-bornage+1) * laborincome
       return
     end if
 
-    penaccrue = pax * pa2 * ageshift * laborincome
+    penaccrue = pax * pa2 * ageshift(age-bornage+1) * laborincome
 
     return
-  end subroutine computepenaccure
-
+  end subroutine computepenaccrue
+  
 
   subroutine predictpensionwealth(AIME, pencfs, age, assets, penpred)
     implicit none
@@ -36,6 +42,8 @@ contains
     real(8), intent(out) :: penpred
     real(8) :: agekink
 
+    penavailage = 94.0_8
+    
     if (age > (penavailage - 1.0_8)) then
       penpred = 0.0_8
       return
@@ -65,7 +73,7 @@ contains
     real(8) :: bigPIA
 
     if (age < (penbensstart)) then
-      penbenepred = 0.0_8
+       penbenepred = 0.0_8
       return
     end if
 

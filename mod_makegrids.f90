@@ -1,6 +1,8 @@
 module mod_makegrids
 
-    use mod_parameter
+  use mod_parameter
+  use mod_pension
+  use mod_computePIA
 
     implicit none
 
@@ -34,11 +36,12 @@ contains
   subroutine make_H(Hstate)
     real(8), intent(inout) :: Hstate(:)
     integer(8) :: i
-    
-!    Hstate(1:Hnint) = [(Hmin+(i-1)*((Hint-Hmin)/(Hnint-1)),i=1,Hnint)]
-!    Hstate(Hnint+1:Hnum) = [(Hint+i*(Hmax-Hint)/Hnint, i=1,Hnint)]
 
-    Hstate(1:Hnum) =[((Hmin+(i-1)*((Hmax-Hmin)/(Hnum-1))), i=1, Hnum)]
+    Hstate(1) = 0.0_8
+    Hstate(2:Hnint) = [(Hmin+(i-2)*((Hint-Hmin)/(Hnint-2)),i=2,Hnint)]
+    Hstate(Hnint+1:Hnum) = [(Hint+i*(Hmax-Hint)/Hnint, i=2,Hnint)]
+
+    !Hstate(2:Hnum) =[((Hmin+(i-1)*((Hmax-Hmin)/(Hnum-2))), i=1, Hnum-1)]
   end subroutine make_H
 
   subroutine make_W(Wstate)
@@ -64,6 +67,27 @@ contains
     AIMEstate(AIMEnint+1:AIMEnum) = [(AIMEint+i*(AIMEmax - AIMEint)/AIMEnint, i=1, AIMEnint)]
 
   end subroutine make_AIME
+
+  subroutine make_AIME_2(age, AIMEstate)
+    integer(8), intent(in) :: age
+    real(8), intent(inout) :: AIMEstate(:)
+    real(8) :: kink_pb(3)
+    integer(8) :: i
+    !pension benefit starts at 62
+    if (age >69) then
+       kink_pb(1) = predictpensionbenefits(computePIA(AIMEbk1), 70_8)
+       kink_pb(2) = predictpensionbenefits(pbbk, 70_8)
+       kink_pb(3) = predictpensionbenefits(computePIA(AIMEbk2), 70_8)
+    else
+       kink_pb(1) = predictpensionbenefits(computePIA(AIMEbk1), age)
+       kink_pb(2) = predictpensionbenefits(pbbk, age)
+       kink_pb(3) = predictpensionbenefits(computePIA(AIMEbk2), age)
+    end if
+    AIMEstate(1) = AIMEmin
+    AIMEstate(2) = AIMEbk1
+    AIMEstate(3:5) = [(findAIME(pbbk)+i*(AIMEbk2 - findAIME(pbbk))/3, i=0,2)]
+    AIMEstate(6:AIMEnum) = [(AIMEbk2+i*(AIMEmax - AIMEbk2)/4, i=0,4)]
+  end subroutine make_AIME_2
 
 end module mod_makegrids
   

@@ -12,7 +12,7 @@ module mod_optmum3_gsearch
 
 contains
 
-  subroutine optmum3_gsearch(age, A, AIME, Astate, AIMEstate, M, Copt, Aopt, valopt)
+  subroutine optmum3_gsearch(age, A, AIME, Astate, AIMEstate, M, Copt, Aopt, Iopt, pbopt, ssopt, valopt)
 
     implicit none
 
@@ -22,7 +22,7 @@ contains
     real(8), intent(in) :: Astate(:), AIMEstate(:) 
     real(8), intent(in) :: M
    
-    real(8), intent(out) :: valopt, Copt, Aopt
+    real(8), intent(out) :: valopt, Copt, Aopt, Iopt, pbopt, ssopt
 
     integer(1) :: flag
     integer(8) :: Ci, i
@@ -38,6 +38,8 @@ contains
     PIA = computePIA(AIME)
     ss = PIA
     pb = predictpensionbenefits(PIA, age)
+!    pb = pb*2
+!    pb = 0.0_8
     laborincome = 0.0_8
  
     income = computeaftertaxincome(laborincome, A, MTR, 0.0_8, pb, taxtype, age)
@@ -72,6 +74,9 @@ contains
        if (val > valopt) then
           Copt = C
           Aopt = nextperiodassets
+          Iopt = income
+          pbopt = pb
+          ssopt = ss
           valopt = val
        end if
 
