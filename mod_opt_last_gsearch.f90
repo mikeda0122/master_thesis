@@ -8,16 +8,16 @@ module mod_opt_last_gsearch
 
 contains
 
-  subroutine opt_last_gsearch(age, A, Astate, Copt, Aopt, valopt)
+  subroutine opt_last_gsearch(age, A, Astate, M, Copt, Aopt, valopt)
 
     implicit none
 
     
     integer(8), intent(in) :: age
-    real(8), intent(in) :: A
-    
+    real(8), intent(in) :: A 
     real(8), intent(in) :: Astate(:) 
-
+    real(8), intent(in) :: M
+   
     real(8), intent(out) :: valopt, Copt, Aopt
 
     integer(1) :: flag
@@ -54,11 +54,12 @@ contains
 
        nextperiodassets = cashonhand - C
 
-       utils = U(C, 0.0_8, 0_1, 0.0_8, 1_1)
+       utils = U(C, 0.0_8, 0_1, M, 1_1)
+!       utils = log(C)
 
        bequestutils = beq(nextperiodassets, 1_1)
 
-       val = utils + p_beta*bequestutils      
+       val = utils + p_beta*bequestutils
        
        if (val > valopt) then
           Copt = C
@@ -71,3 +72,19 @@ contains
   end subroutine opt_last_gsearch
 end module mod_opt_last_gsearch
 
+
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+
+    

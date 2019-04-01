@@ -29,22 +29,22 @@ module mod_utility
         real(8) :: leisure
         real(8) :: within
 
-
+        
         if (nonsep == 1_1) then
-            leisure = p_leispref - h - ((p_fixcost*particip) + (p_leisprefbad*badheal))
-            within = (c**p_gamh) * (leisure**(1-p_gamh))
-            if (p_gamc == 1.0_8) then
-                utils = p_conspref * log(within)
-            else
-                utils = p_conspref * (within**(1-p_gamc)) * p_onemgamc
-            end if
+           leisure = p_leispref - h - ((p_fixcost*particip) + (p_leisprefbad*badheal))
+           within = (c**p_gamh) * (leisure**(1-p_gamh))
+           if (p_gamc == 1.0_8) then
+              utils = p_conspref * log(within)
+           else
+              utils = p_conspref * (within**(1-p_gamc)) * p_onemgamc
+           end if
         else if (nonsep == 0_1) then
-            within = c**(1-p_gamc)*p_onemgamc
-            leisure = 5280-h-((p_fixcost*particip) + (p_leisprefbad*badheal))
-            leisure = leisure**(1-p_gamh)*p_onemgamh
-            utils = p_conspref*(within + (p_leispref*leisure))
+           within = c**(1-p_gamc)*p_onemgamc
+           leisure = 5280-h-((p_fixcost*particip) + (p_leisprefbad*badheal))
+           leisure = leisure**(1-p_gamh)*p_onemgamh
+           utils = p_conspref*(within + (p_leispref*leisure))
         end if
-
+        
     end function U
 
     function beq(assets, nonsep) result(val)
