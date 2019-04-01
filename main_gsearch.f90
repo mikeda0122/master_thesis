@@ -211,7 +211,9 @@ program main
 !     p_onemgamh = 1.0_8/(1.0_8-p_gamh)
 !  end if
 
-
+  write(*,*) 'nonsep=', nonsep
+  write(*,*) 'taxtype=', taxtype
+  write(*,*) 'tiedwage=', tiedwage
 
   open(unit=15, file='valuesopt.csv')
   write(15,"(A)") "age, M, A, Aindex, AIME, AIMEindex, Wage, Windex, Aopt, Copt, Hopt, Bopt, nextAIMEopt, Iopt, pbopt, ssopt, value"
@@ -433,7 +435,7 @@ do age = penage-1, bornage, -1 !age 61-30
       do Ai = 1, Anum
          do AIMEi = 1, AIMEnum
             Cinit = optC_good(age-bornage+2, AIMEi, Wi, Ai, 1_8)
-            call optmum0(age, Astate(Ai), AIMEstate(AIMEi), Wstate(Wi), Cinit, 0.0_8, Vgood, Vbad, Astate, AIMEstate, Wstate, Hstate, mortality_good, mortality_bad, good_to_bad, bad_to_bad, &
+            call optmum0(age, Astate(Ai), AIMEstate(AIMEi), Wstate(Wi), Cinit, 0.0_8, Vgood, Vbad, Astate, AIMEstate, Wstate, Cstate, Hstate, mortality_good, mortality_bad, good_to_bad, bad_to_bad, &
                  hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, gvec, ageshift, Copt, Hopt, Aopt, Wopt_good, Wopt_bad, AIMEopt, Iopt, pbopt, ssopt, valopt)
             do Bi = 1, 2
                Vgood(age-bornage+1_8, AIMEi, Wi, Ai, Bi) = valopt
@@ -452,7 +454,7 @@ do age = penage-1, bornage, -1 !age 61-30
                  age,',', 0.0_8,',', Astate(Ai),',', Ai,',', AIMEstate(AIMEi),',', AIMEi,',', Wstate(Wi),',', Wi,',', Aopt,',', Copt,',', Hopt,',', 0_8,',', AIMEopt,',', Iopt,',', pbopt,',', ssopt,',', valopt
 
             Cinit = optC_bad(age-bornage+2, AIMEi, Wi, Ai, 1_8)
-            call optmum0(age, Astate(Ai), AIMEstate(AIMEi), Wstate(Wi), Cinit, 1.0_8, Vgood, Vbad, Astate, AIMEstate, Wstate, Hstate, mortality_good, mortality_bad, good_to_bad, bad_to_bad, &
+            call optmum0(age, Astate(Ai), AIMEstate(AIMEi), Wstate(Wi), Cinit, 1.0_8, Vgood, Vbad, Astate, AIMEstate, Wstate, Cstate, Hstate, mortality_good, mortality_bad, good_to_bad, bad_to_bad, &
                  hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, gvec, ageshift, Copt, Hopt, Aopt, Wopt_good, Wopt_bad, AIMEopt, Iopt, pbopt, ssopt, valopt)
             do Bi = 1,2
                Vbad(age-bornage+1_8, AIMEi, Wi, Ai, Bi) = valopt

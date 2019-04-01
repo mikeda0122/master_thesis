@@ -37,15 +37,22 @@ contains
     real(8), intent(out) :: wtpogood, wtpobad
     real(8), intent(out) :: val
 
+    real(8) :: cashonhand
+    integer(1) :: flag
+    
     real(8) :: reduc
-
     real(8) :: earlyretirement, makeadjust
-
     real(8) :: penacc1, penacc2, nextpenbenpred, penbenpred, nextPIA
     
     real(8) :: utils, bequestutils
-
     real(8) :: Evtgood, Evtbad, Evtpo
+
+    cashonhand = ss + income + A
+    flag = 0_1
+    
+    if (C>cashonhand) then
+       flag = 1_1
+    end if
     
     call ass(age, currentB, income, C, laborincome, A, ss, reduc, nextperiodassets)
 
@@ -111,9 +118,11 @@ contains
 
     val = utils + p_beta*Evtpo
 
-    if (val > -1000000000.0_8 .and. val < 100000.0_8) then
+    if (flag==1_1) then
+       val = vpanish
+    else if (val > -1000000000.0_8) then
        return
-    else if (utils>-1000000000.0_8 .and. utils<1000000.0_8) then
+    else if (utils>-1000000000.0_8) then
        write(*,*) 'something other than utils went wrong!!!!'
        write(*,*) 'val', val
        write(*,*) 'utils', utils, 'Evtpo', Evtpo
@@ -124,11 +133,10 @@ contains
        write(*,*) 'You are not supposed to be here!!'
        read*
     else
-       
        !For those who works more than their time endowment.
        !write(*,*) 'val', val
        !write(*,*) 'utils', utils, 'Evtpo', Evtpo
-       val = -1000000000.0_8
+       val = vpanish
        !write(*,*) 'asset', nextperiodassets, 'C', C
        !write(*,*) 'H', H, 'particip', particip
        !write(*,*) 'M', M, 'nonsep', nonsep

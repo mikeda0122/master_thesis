@@ -108,11 +108,17 @@ contains
              print*, 'This is not what you want!!'
              read*
           end if
-          
-          if (p_leispref - H - ((p_fixcost*particip) + (p_leisprefbad*M))<=0) then
-             cycle
-          end if
 
+          if (nonsep==1_1) then
+             if (p_leispref - H - ((p_fixcost*particip) + (p_leisprefbad*M))<=0) then
+                cycle
+             end if
+          else
+             if (5280.0_8 - H - ((p_fixcost*particip) + (p_leisprefbad*M))<=0) then
+                cycle
+             end if
+          end if
+          
           laborincome = computelaborincome(W, H)
 
           PIA = computePIA(AIME)
@@ -129,85 +135,88 @@ contains
           endif
 
           cashonhand = ss + income + A ! + borrowamount
-          flag = 0_1
 
           Cmin = cfloor
           Cmax = cashonhand
 
-          if (Cglob==0) then
-             if (Cinit<inCstate(2)) then
-                initCi = 1
-                Clen = size(inCstate)
-                Cstate = inCstate
-             else if (Cinit>=inCstate(Cnum-1)) then
-                initCi = Cnum
-                Clen = size(inCstate)
-                do i = Cnum, 1, -1
-                   Cstate(i) = inCstate(i)
-                end do
-             else if (inCstate(2)<=Cinit .and. Cinit<inCstate(Cnum)) then
-                do i = 2, Cnum-1
-                   if (inCstate(i)<=Cinit .and. Cinit<inCstate(i+1)) then
-                      initCi = i
-                      exit
-                   end if
-                end do
-
-                call computeval1(age, A, W, AIME, M, inCstate(initCi+1), H, particip, currentB, tempnextPIA,income, ss, laborincome, PIA, Astate, Wstate, AIMEstate, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, ageshift, gvec, mortality_good, mortality_bad, good_to_bad, bad_to_bad, eretadj, bigcred, cumeretadj, litcred, Vgood, Vbad, nextperiodassets, nextperiodAIME, wtpogood, wtpobad, valp)
-                if (initCi<=Cnum-2) then
-                   call computeval1(age, A, W, AIME, M, inCstate(initCi+2), H, particip, currentB, tempnextPIA, income, ss, laborincome, PIA, Astate, Wstate, AIMEstate, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, ageshift, gvec, mortality_good, mortality_bad, good_to_bad, bad_to_bad, eretadj, bigcred, cumeretadj, litcred, Vgood, Vbad, nextperiodassets, nextperiodAIME, wtpogood, wtpobad, valpp)
-                else if (initCi==Cnum-1) then
-                   valpp=-100000000000
-                else
-                   write(*,*) 'something is wrong with initCi!!!!'
-                end if
-                call computeval1(age, A, W, AIME, M, inCstate(initCi), H, particip, currentB, tempnextPIA, income, ss, laborincome, PIA, Astate, Wstate, AIMEstate, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, ageshift, gvec, mortality_good, mortality_bad, good_to_bad, bad_to_bad, eretadj, bigcred, cumeretadj, litcred, Vgood, Vbad, nextperiodassets, nextperiodAIME, wtpogood, wtpobad, valm)
-                call computeval1(age, A, W, AIME, M, inCstate(initCi-1), H, particip, currentB, tempnextPIA, income, ss, laborincome, PIA, Astate, Wstate, AIMEstate, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, ageshift, gvec, mortality_good, mortality_bad, good_to_bad, bad_to_bad, eretadj, bigcred, cumeretadj, litcred, Vgood, Vbad, nextperiodassets, nextperiodAIME, wtpogood, wtpobad, valmm)
-
-                allocate(p_Cstate(Cnum-initCi))
-                allocate(m_Cstate(initCi))
-
-                do i = initCi+1, Cnum
-                   p_Cstate(i-initCi) = inCstate(i)
-                end do
-
-                do i = 1, initCi
-                   m_Cstate(i) = inCstate(initCi-i+1)
-                end do
-
-                if (valpp>=valp) then
-                   Clen = size(p_Cstate)
-                   allocate(Cstate(Clen))
-                   Cstate = p_Cstate
-                else if (valmm>=valm) then
-                   Clen = size(m_Cstate)
-                   allocate(Cstate(Clen))
-                   Cstate = m_Cstate
-                else if (valp>=valm) then
-                   val = valp
-                   Clen = 1_8
-                   allocate(Cstate(Clen))
-                   Cstate(1) = inCstate(initCi+1)
-                else if (valm>valp) then
-                   val = valm
-                   Clen = 1_8
-                   allocate(Cstate(Clen))
-                   Cstate(1) = inCstate(initCi-1)
-                else
-                   write(*,*) 'Something is wrong with optmum1!!!'
-                   write(*,*) 'valpp=', valpp
-                   write(*,*) 'valp=', valp
-                   write(*,*) 'valm=', valm
-                   write(*,*) 'valmm=', valmm
-                   read*
-                end if
-             end if
-          else
+          if (Cinit<inCstate(2)) then
+             initCi = 1
              Clen = size(inCstate)
              allocate(Cstate(Clen))
-             Cstate=inCstate
+             Cstate = inCstate
+          else if (Cinit>=inCstate(Cnum-1)) then
+             initCi = Cnum
+             Clen = size(inCstate)
+             allocate(Cstate(Clen))
+             do i = Cnum, 1, -1
+                Cstate(Cnum-i+1) = inCstate(i)
+             end do
+          else if (inCstate(2)<=Cinit .and. Cinit<inCstate(Cnum-1)) then
+             do i = 2, Cnum-1
+                if (inCstate(i)<=Cinit .and. Cinit<inCstate(i+1)) then
+                   initCi = i
+                   exit
+                end if
+             end do
+
+             call computeval1(age, A, W, AIME, M, inCstate(initCi+1), H, particip, currentB, tempnextPIA,income, ss, laborincome, PIA, Astate, Wstate, AIMEstate, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, ageshift, gvec, mortality_good, mortality_bad, good_to_bad, bad_to_bad, eretadj, bigcred, cumeretadj, litcred, Vgood, Vbad, nextperiodassets, nextperiodAIME, wtpogood, wtpobad, valp)
+             if (initCi<=Cnum-2) then
+                call computeval1(age, A, W, AIME, M, inCstate(initCi+2), H, particip, currentB, tempnextPIA, income, ss, laborincome, PIA, Astate, Wstate, AIMEstate, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, ageshift, gvec, mortality_good, mortality_bad, good_to_bad, bad_to_bad, eretadj, bigcred, cumeretadj, litcred, Vgood, Vbad, nextperiodassets, nextperiodAIME, wtpogood, wtpobad, valpp)
+             else if (initCi==Cnum-1) then
+                valpp=vpanish
+             else
+                write(*,*) 'something is wrong with initCi!!!!'
+             end if
+             call computeval1(age, A, W, AIME, M, inCstate(initCi), H, particip, currentB, tempnextPIA, income, ss, laborincome, PIA, Astate, Wstate, AIMEstate, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, ageshift, gvec, mortality_good, mortality_bad, good_to_bad, bad_to_bad, eretadj, bigcred, cumeretadj, litcred, Vgood, Vbad, nextperiodassets, nextperiodAIME, wtpogood, wtpobad, valm)
+             call computeval1(age, A, W, AIME, M, inCstate(initCi-1), H, particip, currentB, tempnextPIA, income, ss, laborincome, PIA, Astate, Wstate, AIMEstate, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, ageshift, gvec, mortality_good, mortality_bad, good_to_bad, bad_to_bad, eretadj, bigcred, cumeretadj, litcred, Vgood, Vbad, nextperiodassets, nextperiodAIME, wtpogood, wtpobad, valmm)
+
+             allocate(p_Cstate(Cnum-initCi))
+             allocate(m_Cstate(initCi))
+
+             do i = initCi+1, Cnum
+                p_Cstate(i-initCi) = inCstate(i)
+             end do
+
+             do i = 1, initCi
+                m_Cstate(i) = inCstate(initCi-i+1)
+             end do
+
+             if  (valmm>=valm .or. valm==vpanish .or. valp==vpanish .or. (valpp==vpanish .and. valm>=valp))then
+                Clen = size(m_Cstate)
+                allocate(Cstate(Clen))
+                Cstate = m_Cstate
+                !write(*,*) 'Something is wrong with optmum1!!!'
+                !write(*,*) 'Cpp', inCstate(initCi+2), 'valpp=', valpp
+                !write(*,*) 'Cpp', inCstate(initCi+1), 'valp=', valp
+                !write(*,*) 'Cpp', inCstate(initCi), 'valm=', valm
+                !write(*,*) 'Cpp', inCstate(initCi-1), 'valmm=', valmm
+                !write(*,*) 'Cstate', Cstate
+                !write(*,*) 'm_Cstate', m_Cstate
+                !read*
+             else if (valpp>=valp) then                
+                Clen = size(p_Cstate)
+                allocate(Cstate(Clen))
+                Cstate = p_Cstate
+             else if (valp>=valm .or. (valpp==vpanish .and. valm<valp)) then
+                val = valp
+                Clen = 1_8
+                allocate(Cstate(Clen))
+                Cstate(1) = inCstate(initCi+1)
+             else if (valm>valp) then
+                val = valm
+                Clen = 1_8
+                allocate(Cstate(Clen))
+                Cstate(1) = inCstate(initCi-1)
+             else
+                write(*,*) 'Something is wrong with optmum1!!!'
+                write(*,*) 'valpp=', valpp
+                write(*,*) 'valp=', valp
+                write(*,*) 'valm=', valm
+                write(*,*) 'valmm=', valmm
+                read*
+             end if
           end if
-          
+
           temp2_valopt = -10000000000.0_8
 
           do Ci = 1, Clen
@@ -222,7 +231,82 @@ contains
 !                nextperiodassets = Astate(1)
              end if
 
-             call computeval1(age, A, W, AIME, M, C, H, particip, currentB, tempnextPIA, income, ss, laborincome, PIA, Astate, Wstate, AIMEstate, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, ageshift, gvec, mortality_good, mortality_bad, good_to_bad, bad_to_bad, eretadj, bigcred, cumeretadj, litcred, Vgood, Vbad, nextperiodassets, nextperiodAIME, wtpogood, wtpobad, val)
+             if (modval==1) then                
+                call computeval1(age, A, W, AIME, M, C, H, particip, currentB, tempnextPIA, income, ss, laborincome, PIA, Astate, Wstate, AIMEstate, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, ageshift, gvec, mortality_good, mortality_bad, good_to_bad, bad_to_bad, eretadj, bigcred, cumeretadj, litcred, Vgood, Vbad, nextperiodassets, nextperiodAIME, wtpogood, wtpobad, val)
+             else
+                
+                call ass(age, currentB, income, C, laborincome, A, ss, reduc, nextperiodassets)
+
+                !Compute next period's AIME with adujustment if necessary
+
+                earlyretirement = 1.0_8
+                makeadjust = 0.0_8
+
+                if (currentB==1_8 .and. age<nret) then
+                   earlyretirement = earlyretirement*eretadj
+                   !                earlyretirement = earlyretirement*cumeretadj
+                   makeadjust = 1.0_8
+                else if (currentB==0_8 .and. age>=nret) then
+                   earlyretirement = earlyretirement*(1+litcred)
+                   makeadjust = 1.0_8
+                end if
+
+                if (currentB==1_8) then
+                   if(age<nret) then
+                      earlyretirement = earlyretirement*(1+bigcred*reduc)
+                      !                   earlyretirement = earlyretirement*(1+bigcred)
+                   else if (age>=nret) then
+                      earlyretirement = earlyretirement*(1+litcred*reduc)
+                      !                   earlyretirement = earlyretirement*(1+litcred)
+                   else
+                      write(*,*) 'something wrong with earlyretirement!!'
+                   end if
+                   makeadjust = 1.0_8
+                end if
+
+                if (makeadjust==1.0_8) then
+                   call getnextPIA(tempnextPIA, earlyretirement, nextPIA)
+                   !                nextPIA = tempnextPIA
+                   nextperiodAIME = findAIME(nextPIA)
+                else
+                   call computeAIME(AIME, laborincome, age, currentB, nextperiodAIME)
+                end if
+
+                !adjust next period assets based on pension accrue
+                call computepenaccrue(age, ageshift, laborincome, penacc1)
+                nextPIA = computePIA(nextperiodAIME)
+                nextpenbenpred = predictpensionbenefits(nextPIA, penbensstart+1)
+                penbenpred = predictpensionbenefits(PIA, penbensstart+1)
+                penacc2 = nextpenbenpred - penbenpred
+                penacc2=penacc2*gvec(age + 1-bornage)
+                nextperiodassets=nextperiodassets+penacc1-penacc2
+
+                utils = U(C, H, particip, M, nonsep)
+
+                bequestutils = beq(nextperiodassets, nonsep)
+
+                call nextwage(age, W, M, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, wtpogood, wtpobad)
+
+                Evtgood = integral(age, nextperiodassets, wtpogood, nextperiodAIME, Vgood, Astate, Wstate, AIMEstate, currentB)
+
+                Evtbad = integral(age, nextperiodassets, wtpobad, nextperiodAIME, Vbad, Astate, Wstate, AIMEstate, currentB)
+
+                if(M == 0.0_8) then
+                   Evtpo = ((1.0_8-mortality_good(age-20+1))*((1.0_8-good_to_bad(age-20+1))*Evtgood &
+                        + good_to_bad(age-20+1)*Evtbad) + mortality_good(age-20+1)*bequestutils)
+                else if (M==1.0_8) then
+                   Evtpo = ((1.0_8-mortality_bad(age-20+1))*((1.0_8-bad_to_bad(age-20+1))*Evtgood &
+                        +bad_to_bad(age-20+1)*Evtbad) + mortality_bad(age-20+1)*bequestutils)
+                else
+                   write(*,*) 'Health is neither 0 nor 1!!'
+                end if
+
+                !write(*,*) mortality(age-20+1)
+
+                !read*
+
+                val = utils + p_beta*Evtpo
+             end if
              
              if (val > temp2_valopt .and. currentB >= B) then
                 temp2_Copt = C
@@ -256,12 +340,14 @@ contains
              temp_valopt = temp2_valopt
           end if
 
-          if (Cglob==0) then
+          if (inCstate(2)<=Cinit .and. Cinit<inCstate(Cnum-1)) then
              deallocate(p_Cstate)
              deallocate(m_Cstate)
+             deallocate(Cstate)
+          else if (Cinit>=inCstate(Cnum-1) .or. Cinit<inCstate(2)) then
+             deallocate(Cstate)
           end if
-          
-          deallocate(Cstate)
+
 
        end do !End Hi loop
 

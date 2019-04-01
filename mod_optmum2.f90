@@ -73,6 +73,7 @@ contains
 
        if (cashonhand - Astate(1) < cfloor) then
           C = cfloor
+
 !          nextperiodassets = Astate(1)
       end if
 

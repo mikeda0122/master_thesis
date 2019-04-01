@@ -147,6 +147,8 @@ module mod_parameter
     ! grids of Bi
     integer(8) :: Bnum = 2
 
+    real(8), parameter :: vpanish = -10000000000000.0_8
+
 
     real(8) :: p_beta
     real(8) :: cfloor = 1.0_8
@@ -176,42 +178,42 @@ module mod_parameter
     ! _trdat2 = _trdat+mashft-1
     ! ageseq(_tr) = [(bornage+i, i=1,_tr)]
     ! dieage = bornage+_tr-1
+    
+    
+    !early application penalty Factors
+    !real(8) :: eretadj64 = 0.93333
+    !real(8) :: eretadj63 = 0.9286
+    !real(8) :: eretadj62 = 0.92308
+    real(8) :: eretadj64 = 0.93333
+    real(8) :: eretadj63 = 0.9286
+    real(8) :: eretadj62 = 0.92308
 
+    ! Parameters for crediting back SS benefits lost to earnings test
+    real(8) :: bigcred64 = 0.0714
+    real(8) :: bigcred63 = 0.07692
+    real(8) :: bigcred62 = 0.08333
+    real(8) :: litcred65 = 0.03
+    real(8) :: litcred66 = 0.02913
+    real(8) :: litcred67 = 0.0283
+    real(8) :: litcred68 = 0.02752
+    real(8) :: litcred69 = 0.026786
 
-!early application penalty Factors
-!real(8) :: eretadj64 = 0.93333
-!real(8) :: eretadj63 = 0.9286
-!real(8) :: eretadj62 = 0.92308
-real(8) :: eretadj64 = 0.93333
-real(8) :: eretadj63 = 0.9286
-real(8) :: eretadj62 = 0.92308
+    !taxfrac !changes applied in mod_ass.f90
+    real(8) :: taxfrac != 0.5 !Used in mod_ass.f90, effective only if earnings below earnings test threshold levels
+    real(8) :: earnlev != 6000 !earnlev when taxfrac = 0.5. found in algs55.src line 207.
 
-! Parameters for crediting back SS benefits lost to earnings test
-real(8) :: bigcred64 = 0.0714
-real(8) :: bigcred63 = 0.07692
-real(8) :: bigcred62 = 0.08333
-real(8) :: litcred65 = 0.03
-real(8) :: litcred66 = 0.02913
-real(8) :: litcred67 = 0.0283
-real(8) :: litcred68 = 0.02752
-real(8) :: litcred69 = 0.026786
+    !taxtype
+    integer(1) :: taxtype = 0
+    !liquidity
+    integer(1) :: liquid = 0_1
 
-!taxfrac !changes applied in mod_ass.f90
-real(8) :: taxfrac != 0.5 !Used in mod_ass.f90, effective only if earnings below earnings test threshold levels
-real(8) :: earnlev != 6000 !earnlev when taxfrac = 0.5. found in algs55.src line 207.
-
-!taxtype
-integer(1) :: taxtype = 0
-!liquidity
-integer(1) :: liquid = 0_1
-
-!integral part
-real(8):: wnodes(1:5) = (/ -2.02018287d0, -0.9585724646d0, 0.0d0, 0.9585724646d0, 2.02018287d0 /)
-!real(8):: wnodes(1:7) = (/ -2.651961356, -1.673551628, - 0.8162878828, 0.0_8, 0.8162878828, 1.673551628, 2.651961356 /)
-real(8):: wwgts(1:5) = (/ 0.01995624205d0, 0.3936193231d0, 0.9453087204d0, 0.3936193231d0, 0.01995624205d0 /)
-!real(8):: wwgts(1:7) = (/  0.000971781245, 0.05451558281, 0.4256072526, 0.8102646175, 0.4256072526, 0.05451558281, 0.000971781245 /)
-integer(8), parameter::  wnodenum = 5
-real(8):: pi  = 4 * atan (1.0_8)
-real(8):: rhow     = 0.977
-real(8):: stderr = 0.12_8
+    !integral part
+    real(8):: wnodes(1:5) = (/ -2.02018287d0, -0.9585724646d0, 0.0d0, 0.9585724646d0, 2.02018287d0 /)
+    !real(8):: wnodes(1:7) = (/ -2.651961356, -1.673551628, - 0.8162878828, 0.0_8, 0.8162878828, 1.673551628, 2.651961356 /)
+    real(8):: wwgts(1:5) = (/ 0.01995624205d0, 0.3936193231d0, 0.9453087204d0, 0.3936193231d0, 0.01995624205d0 /)
+    !real(8):: wwgts(1:7) = (/  0.000971781245, 0.05451558281, 0.4256072526, 0.8102646175, 0.4256072526, 0.05451558281, 0.000971781245 /)
+    integer(8), parameter::  wnodenum = 5
+    real(8):: pi  = 4 * atan (1.0_8)
+    real(8):: rhow     = 0.977
+    real(8):: stderr = 0.12_8
 end module

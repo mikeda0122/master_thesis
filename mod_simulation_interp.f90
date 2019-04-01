@@ -77,6 +77,8 @@ contains
     integer(8) :: i, j, age, n
     integer(8) :: AIMEi, Wi, Ai, Bi
 
+    integer(8) :: death
+
     n = size(A_dist)
 
     do age = bornage, dieage
@@ -154,7 +156,7 @@ contains
     end do
 
     open(unit=54, file='simulated_prof_ind.csv')
-    write(54, "(A)") "id, age, M, C, A, H, B, I, pb, ss"
+    write(54, "(A)") "id, age, death, M, C, A, H, B, I, pb, ss, AIME"
 
     do i = 1, n
 
@@ -164,6 +166,7 @@ contains
             Astate, Wstate, AIMEstate, wshock_vector, death_age, health, prof_C, prof_A, prof_H, prof_B, prof_W, prof_I, prof_pb, prof_ss, prof_AIME)
 
        do age = 1, dieage-bornage+1
+          death = 1_8
           if (age+bornage-1<death_age) then
              if (health(age)==0.0_8) then
                 mean_prof_C_good(age) = mean_prof_C_good(age) + prof_C(age)
@@ -204,10 +207,11 @@ contains
              mean_prof_ss(age) = mean_prof_ss(age) + prof_ss(age)
              mean_prof_AIME(age) = mean_prof_AIME(age) + prof_AIME(age)
              pop(age) = pop(age) + 1
+             death = 0_8
           end if
 
-          write(54,'(i5, a, i2, a, f4.2, a, f18.5, a, f18.5, a, f18.5, a, f4.2, a, f18.5, a, f18.5, a, f18.5, a, f18.5)') &
-               i, ',', age+bornage-1, ',', health(age), ',', prof_C(age), ',',  prof_A(age), ',', prof_H(age), ',', prof_B(age) &
+          write(54,'(i5, a, i2, a, i2, a, f4.2, a, f18.5, a, f18.5, a, f18.5, a, f4.2, a, f18.5, a, f18.5, a, f18.5, a, f18.5)') &
+               i, ',', age+bornage-1, ',', death, ',', health(age), ',', prof_C(age), ',',  prof_A(age), ',', prof_H(age), ',', prof_B(age) &
                , ',', prof_I(age), ',', prof_pb(age), ',', prof_ss(age), ',', prof_AIME(age)
        end do
 
@@ -238,12 +242,12 @@ contains
 
     open(unit=69, file='simulated_prof.csv')
     write(69, "(A)") &
-         "age, C_good, C_bad, C, A_good, A_bad, H_good, H_bad, H, H_work_good, H_work_bad, H_work, P_good, P_bad, W_good, W_bad, I, pb, ss, AIME, B_good, B_bad, B"
+         "age, pop, pop_good, pop_work_good, C_good, C_bad, C, A_good, A_bad, H_good, H_bad, H, H_work_good, H_work_bad, H_work, P_good, P_bad, W_good, W_bad, I, pb, ss, AIME, B_good, B_bad, B"
 
     do age = 1, dieage-bornage+1
        write(69, &
-            '(i2, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5)') &
-            age+bornage-1, ',', mean_prof_C_good(age), &
+            '(i2, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5)') &
+            age+bornage-1, ',', pop(age), ',', pop_good(age), ',', pop_work_good(age), ',', mean_prof_C_good(age), &
              ',', mean_prof_C_bad(age), ',', mean_prof_C(age), ',', mean_prof_A_good(age), ',', mean_prof_A_bad(age), ',', mean_prof_H_good(age), ',', mean_prof_H_bad(age), ',', mean_prof_H(age), &
              ',', mean_prof_H_work_good(age), ',', mean_prof_H_work_bad(age), ',', mean_prof_H_work(age), &
              ',', mean_prof_P_good(age), ',', mean_prof_P_bad(age), ',', mean_prof_W_good(age), ',', mean_prof_W_bad(age), ',', &
@@ -311,6 +315,14 @@ contains
     prvAIME = AIME0
     prvB = 0_8
     death_age = 30_8
+
+    if (prvW<Wmin) then
+       prvW = Wmin
+    end if
+
+    if (prvAIME<AIMEmin) then
+       prvAIME = AIMEmin
+    end if
 
     prof_W(1) = prvW
 

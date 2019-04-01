@@ -44,8 +44,8 @@ module mod_utility
            leisure = leisure**(1-p_gamh)*p_onemgamh
            utils = p_conspref*(within + (p_leispref*leisure))
         end if
-        
-    end function U
+
+      end function U
 
     function beq(assets, nonsep) result(val)
     ! Bequest function (ret30.cpp: line 220-239)

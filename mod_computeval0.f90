@@ -38,6 +38,9 @@ contains
     real(8), intent(out) :: utils, Evtpo
     real(8), intent(out) :: val
 
+    real(8) :: cashonhand
+    integer(1) :: flag
+    
     real(8) :: reduc
 
     real(8) :: penacc1, penacc2
@@ -47,7 +50,15 @@ contains
 
     real(8) :: Evtgood, Evtbad
 
+    integer(8) ::checkAIME, checkW, checkA, i
 
+    cashonhand = ss + income + A
+    flag = 0_1
+    
+    if (C>cashonhand) then
+       flag = 1_1
+    end if
+    
     call ass(age, currentB, income, C, laborincome, A, ss, reduc, nextperiodassets)
 
 !    if (age==penage-1) then
@@ -78,13 +89,51 @@ contains
 
     val = utils + p_beta*Evtpo
 
-    if (val > -100000.0_8 .and. val < 100000.0_8) then
+!    if (val<0 .and. flag==0_1) then
+!       do i = 1, AIMEnum-1
+!          if (AIMEstate(i)<=nextperiodAIME .and. nextperiodAIME<=AIMEstate(i+1)) then
+!             write(*,*) 'AIMEstate', i
+!             checkAIME = i
+!             exit
+!          end if
+!       end do
+!       
+!       do i = 1, Anum-1
+!          if (Astate(i)<=nextperiodassets .and. nextperiodassets<=Astate(i+1)) then
+!             write(*,*) 'Astate', i
+!             checkA = i
+!             exit
+!          end if
+!       end do
+!
+!       do i = 1, Wnum-1
+!          if (Wstate(i)<wtpogood .and. wtpogood<=Wstate(i+1)) then
+!             write(*,*) 'Wstate', i
+!             checkW = i
+!             exit
+!          end if
+!       end do
+!
+!       write(*,*) 'Vgood'
+!       write(*,*) Vgood(age-bornage+2, checkAIME, checkW, checkA, 1_8)
+!       
+!       write(*,*) 'Evtpo=', Evtpo, 'Evtbad=', Evtbad, 'Evtgood=', Evtgood
+!       write(*,*) 'nextperiodassets=', nextperiodassets, 'nextperiodAIME=', nextperiodAIME, 'wtpogood=', wtpogood
+!       write(*,*) 'flag=', flag
+!       !write(*,*) 'Vbad'
+       !write(*,*) Vbad
+!       read*
+!    end if
+        
+    if (flag==1_1) then
+       val = vpanish
+    else if (val > -10000000000000.0_8) then
        return
     else
        !For those who works more than their time endowment.
        write(*,*) 'val', val
        write(*,*) 'utils', utils, 'Evtpo', Evtpo
-       val = -1000000000.0_8
+       val = -10000000000.0_8
        write(*,*) 'asset', nextperiodassets, 'C', C
        write(*,*) 'H', H, 'particip', particip
        write(*,*) 'M', M, 'nonsep', nonsep
@@ -94,3 +143,4 @@ contains
 
   end subroutine computeval0
 end module mod_computeval0
+
