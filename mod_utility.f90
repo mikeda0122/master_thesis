@@ -4,7 +4,7 @@ module mod_utility
 
   contains
 
-    function U(c, h, particip, badheal, nonsep) result(utils)
+    real(8) function U(c, h, particip, badheal, nonsep)
     ! Utility function (ret30.cpp: line 189-214)
     ! Arguments:
     !   intent(in)
@@ -24,30 +24,38 @@ module mod_utility
         integer(1), intent(in) :: particip
         real(8), intent(in) :: badheal
         integer(1) :: nonsep
-        real(8), intent(out) :: utils
+    !    real(8), intent(out) :: U
 
         real(8) :: leisure
         real(8) :: within
 
-
+        U = vpanish
+        
         if (nonsep == 1_1) then
-            leisure = p_leispref - h - ((p_fixcost*particip) + (p_leisprefbad*badheal))
-            within = (c**p_gamh) * (leisure**(1-p_gamh))
-            if (p_gamc == 1.0_8) then
-                utils = p_conspref * log(within)
-            else
-                utils = p_conspref * (within**(1-p_gamc)) * p_onemgamc
-            end if
+           leisure = p_leispref - h - ((p_fixcost*particip) + (p_leisprefbad*badheal))
+
+           if (c<=0 .or. leisure<=0) then
+              !!We need to think about how to deal with exception!!(Ikeda)
+              U = vpanish
+              return
+           end if
+           
+           within = (c**p_gamh) * (leisure**(1-p_gamh))
+           if (p_gamc == 1.0_8) then
+              U = p_conspref * log(within)
+           else
+              U = p_conspref * (within**(1-p_gamc)) * p_onemgamc
+           end if
         else if (nonsep == 0_1) then
-            within = c**(1-p_gamc)*p_onemgamc
-            leisure = 5280-h-((p_fixcost*particip) + (p_leisprefbad*badheal))
-            leisure = leisure**(1-p_gamh)*p_onemgamh
-            utils = p_conspref*(within + (p_leispref*leisure))
+           within = c**(1-p_gamc)*p_onemgamc
+           leisure = 5280-h-((p_fixcost*particip) + (p_leisprefbad*badheal))
+           leisure = leisure**(1-p_gamh)*p_onemgamh
+           U = p_conspref*(within + (p_leispref*leisure))
         end if
 
-    end function U
+      end function U
 
-    function beq(assets, nonsep) result(val)
+    real(8) function beq(assets, nonsep)
     ! Bequest function (ret30.cpp: line 220-239)
     ! Arguments:
     !   intent(in)
@@ -58,24 +66,25 @@ module mod_utility
         implicit none
         real(8), intent(in) :: assets
         integer(1) :: nonsep
-        real(8), intent(out) :: val
+    !    real(8), intent(out) :: beq
 
+        beq = vpanish
 
         if (nonsep == 1_1) then
             if (assets < -(p_beqk - 1.0_8)) then
-                val = p_onemgamc + (assets + p_beqk)
+                beq = p_onemgamc + (assets + p_beqk)
             else
                 if (p_gamc == 1.0_8) then
-                    val = log(assets + p_beqk)
+                    beq = log(assets + p_beqk)
                 else
-                    val = ((assets + p_beqk) ** ((1 - p_gamc)*p_gamh)) * p_onemgamc
+                    beq = ((assets + p_beqk) ** ((1 - p_gamc)*p_gamh)) * p_onemgamc
                 end if
             end if
         else if (nonsep == 0_1) then
-            val = (assets + p_beqk) ** (1 - p_gamc) * p_onemgamc
+            beq = (assets + p_beqk) ** (1 - p_gamc) * p_onemgamc
         end if
 
-        val = val * p_bequest * p_conspref
+        beq = beq * p_bequest * p_conspref
 
     end function beq
 

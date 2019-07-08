@@ -1,5 +1,5 @@
 module mod_integral
-  
+
   use mod_parameter
   use mod_interp
   use mod_profwage
@@ -30,24 +30,39 @@ contains
 !nodenum==5;
 !      nodes=intmat5[.,1]; wgts=intmat5[.,2]; !since it is symmetric, intmat5 actually provides 5 nodes and weights
 
-function integral(age, nextperiodassets, W, nextperiodAIME, V, Astate, Wstate, AIMEstate, Bi) result(vint)
+real(8) function integral(age, nextperiodassets, W, nextperiodAIME, V, Astate, Wstate, AIMEstate, Bi)
       implicit none
       integer(8), intent(in) :: age
       real(8), intent(in) :: nextperiodassets, W, nextperiodAIME, V(:,:,:,:,:), Astate(:), Wstate(:), AIMEstate(:)
       integer(8), intent(in) :: Bi
-      real(8), intent(out):: vint
+    !  real(8), intent(out):: integral
       real(8) :: ev, wage
       integer :: i
-      integer(1), parameter::  wnodenum = 5
+      real(8) :: nodes(wnodenum)
+
     wage=0.0_8
-    vint=0.0_8
+    integral=0.0_8
     do i = 1, wnodenum
        !wage= W+sqrt(2*0.0141)*wnodes(i) !wage = (sqrt(2) * sigma * wnodes(i) + mu) ,where (mu, sigma^2) = (0, 0.0141)
-       wage= W*wnodes(i)
-        ev=interp(age, nextperiodassets, wage, nextperiodAIME, V, Astate, Wstate, AIMEstate, Anum, Wnum, AIMEnum, Bi)
-        vint=vint+ev*wwgts(i)
+       nodes(i) = exp(sqrt(2.0_8)*stderr*wnodes(i))
+       wage= W*nodes(i)
+       ev=interp(age, nextperiodassets, wage, nextperiodAIME, V, Astate, Wstate, AIMEstate, Asnum, Wnum, AIMEnum, Bi)
+       integral=integral+ev*wwgts(i)
     enddo
-    vint = vint/sqrt(pi)
+    integral = integral/sqrt(pi)
+    !if (integral>vpanish) then
+    !   return
+    !else
+    !   write(*,*) 'age=', age
+    !   write(*,*) 'A=', nextperiodassets
+    !   write(*,*) 'W=', W
+    !   write(*,*) 'AIME=', nextperiodAIME
+    !   write(*,*) 'B=', Bi
+    !   write(*,*) 'pi=', pi
+    !   write(*,*) 'ev=', ev
+    !   write(*,*) 'integral=', integral
+    !   !write(*,*) 'wwgts=', wwgts
+    !end if
 
   end function
 

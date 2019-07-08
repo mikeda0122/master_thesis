@@ -5,39 +5,67 @@ module mod_computePIA
 
 
 contains
-  function computePIA(AIME) result(PIA)
+    real(8) function computePIA(AIME)
     implicit none
     real(8), intent(in) :: AIME
-    real(8), intent(out) :: PIA
+    !real(8), intent(out) :: computePIA
 
 
     if (AIME<AIMEbk1) then
-      PIA = mpr1 * AIME
+      computePIA = mpr1 * AIME
     else if (AIME<AIMEbk2) then
-      PIA = PIA1 + mpr2 * (AIME - AIMEbk1)
+      computePIA = PIA1 + mpr2 * (AIME - AIMEbk1)
     else
-      PIA = PIA2 + mpr3 * (AIME - AIMEbk2)
+      computePIA = PIA2 + mpr3 * (AIME - AIMEbk2)
     end if
 
  end function computePIA
 
-    function findAIME(PIA) result(AIME)
-        implicit none
-            real(8), intent(in) :: PIA
-            real(8), intent(out) :: AIME
+   real(8) function findAIME(PIA)
+   implicit none
+   real(8), intent(in) :: PIA
 
-            if ((PIA/mpr1)<(AIMEbk1)) then
-                AIME = (PIA/mpr1)
+   if ((PIA/mpr1)<(AIMEbk1)) then
+      findAIME = (PIA/mpr1)
 
-            else if ((AIMEbk1+((PIA-PIA1)/mpr2))<(AIMEbk2)) then
-                AIME = (AIMEbk1+(PIA-PIA1)/mpr2)
-            else
+   else if ((AIMEbk1+((PIA-PIA1)/mpr2))<(AIMEbk2)) then
+      findAIME = (AIMEbk1+(PIA-PIA1)/mpr2)
+   else
 
-                AIME=AIMEbk2+(PIA-PIA2)/mpr3
-                if (AIME > AIMEmax) then
-                    AIME = AIMEmax
-                endif
-            endif
-    end function findAIME
+      findAIME=AIMEbk2+(PIA-PIA2)/mpr3
+      if (findAIME > AIMEmax) then
+         findAIME = AIMEmax
+      endif
+   endif
+ end function findAIME
+
+ subroutine getnextPIA (PIA, earlyretirement, nextPIA)
+
+   implicit none
+
+   real(8), intent(in) :: earlyretirement
+   real(8), intent(in) :: PIA
+   real(8) :: bigPIA, ssfracofPIA
+   real(8), intent(out) :: nextPIA
+
+   ssfracofPIA = 1.0_8
+
+   if (PIA > pbbk) then
+      bigPIA = 1.0_8
+   else
+      bigPIA = 0.0_8
+   end if
+
+   nextPIA = (pb1 + (ssfracofPIA * earlyretirement)) * PIA + pb2 * bigPIA * (PIA - pbbk)
+   nextPIA = nextPIA / ((ssfracofPIA + pb1))
+   if (nextPIA < pbbk) then
+     nextPIA = nextPIA
+      !if over the kink in the spline function
+   else
+      nextPIA = (pbbk * pb2) + (pb1 + (ssfracofPIA * earlyretirement)) * PIA + pb2 * bigPIA * (PIA - pbbk)
+      nextPIA = nextPIA / (ssfracofPIA + pb1 + pb2)
+   end if
+
+ end subroutine getnextPIA
 
 end module mod_computePIA

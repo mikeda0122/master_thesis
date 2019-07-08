@@ -14,8 +14,8 @@ contains
     real(8), intent(out) :: cumadj2, eretadj, bigcred, cumeretadj, litcred
 
 
-    if ((age < nret) .and. (B == 1)) then
-      if ((nret > 65) .and. (age < 65)) then !for policy experiment
+    if ((age < etstage)) then
+      if ((nret >= 65) .and. (age <= 65)) then !for policy experiment
         cumadj2 = eretadj64 ** (nret-65)
       end if
       if (age > 64) then
@@ -40,10 +40,10 @@ contains
       end if
     end if
 
-    if ((age >= nret) .and. (age < etstage)) then
-      !if (age < 65) then
-      !  litcred = litcred65
-      if (age == 65) then
+    if ((age < etstage)) then
+      if (age < 65) then
+        litcred = litcred65
+      else if (age == 65) then
         litcred = litcred65
       else if (age == 66) then
         litcred = litcred66
