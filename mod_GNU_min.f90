@@ -1,12 +1,10 @@
 module mod_GNU_min
-
-  use fgsl
-  use mod_gmm
-  use mod_parameter
   
+  use mod_gmm
+
 contains
   subroutine GNU_NM_min(intval, step)
-    real(fgsl_double), intent(in) :: intval(:), step(:)
+    real(fgsl_double), intent(in) target :: intval(:), step(:)
     integer(fgsl_int), parameter :: itmax = 1000
     real(fgsl_double), parameter :: eps=1.0E-6_fgsl_double
     integer(fgsl_int) :: status, vstatus, i
@@ -19,16 +17,13 @@ contains
     integer(fgsl_size_t), parameter :: pdim = 7
 
     real(fgsl_double), target :: location(pdim), dummy(1)
-    real(fgsl_double), pointer :: locptr(:), intptr(:), stptr(:)
+    real(fgsl_double), pointer :: intptr(:), stptr(:), locptr(:)
 
-    type(fgsl_vector) :: locvec, intvec, stepvec
-    
-    !!************************************************************************************
-    !!***********************Change fortran vector into pointers**************************
-    !!************************************************************************************
-    
+    type(fgsl_vector) :: intvec, stepvec, locvec
+
     intvec = fgsl_vector_init(1.0_fgsl_double)
     stepvec = fgsl_vector_init(1.0_fgsl_double)
+    locvec = fgsl_vector_init(1.0_fgsl_double)
 
     !intval(1:pdim) = (/0.615_fgsl_double, 7.96_fgsl_double, 3399.0_fgsl_double, &
     !     &202.0_fgsl_double, 240.0_fgsl_double, 1.04_fgsl_double, 0.031734_fgsl_double/) !para(4) scaled
@@ -64,7 +59,6 @@ contains
        write(6, *) 'Failed to properly initialize vector object.'
     end if
 
-    locvec = fgsl_vector_init(1.0_fgsl_double)
     !
     !!Specify which kind of minimizer (minimization method) we are using
     min_fslv = fgsl_multimin_fminimizer_alloc(fgsl_multimin_fminimizer_nmsimplex, pdim) !!possibly we need dimension of parameters, "n"

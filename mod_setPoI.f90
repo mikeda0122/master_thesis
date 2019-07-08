@@ -30,15 +30,14 @@ contains
        end if
        rhow     = 0.977
        stderr = 0.12_8
-    else if (job==1_8) then
-       
+    else if (job==1_8 .or. job==2_8 .or. job==3_8) then
        p_gamh = params(1)/10.0_8
        p_gamc = params(2)
        p_leispref = params(3)*1000.0_8
        p_leisprefbad = params(4)*100.0_8
        p_fixcost = params(5)*100.0_8
        p_beta = params(6)/10.0_8
-       p_bequest = params(7)/100.0_8 !0.88914_8
+       p_bequest = params(7)/100.0_8
        p_conspref = 1000000.0_8
        p_beqk = 500000.0_8
        p_onemgamc = 1.0_8
@@ -52,8 +51,6 @@ contains
        rhow     = 0.977
        stderr = 0.12_8
     end if
-
-    
     !rhow     = params(8)
     !stderr = params(9)
     !write(*,*) 'p_leispref', p_leispref
@@ -87,7 +84,7 @@ contains
     !p_leisprefbad = 279.19_8
     !p_fixcost = 963.92_8 !!params(1) !!505.1515 !963.92_8 in params.out
     !p_beta = 0.99298_8
-    !p_bequest = 0.8892886 !0.88914_8 0.029108
+    !p_bequest = 0.8892886 !0.88914_8
     !p_conspref = 1000000.0_8
     !p_beqk = 500000.0_8
     !p_onemgamc = 1.0_8

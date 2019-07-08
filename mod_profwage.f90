@@ -53,7 +53,7 @@ contains
         close(76)
 
         open(unit = 71, iostat = ios, file = 'wage_growth_uugr_notied_noselect.csv', &
-             action = 'read', form = 'formatted', status = 'old')
+             &action = 'read', form = 'formatted', status = 'old')
         if (ios /= 0) then
            write(*,*) 'Failed to open!'
            stop
@@ -69,7 +69,7 @@ contains
         close(71)
 
         open(unit = 72, iostat = ios, file = 'wage_growth_uhgr_notied_noselect.csv', &
-             action = 'read', form = 'formatted', status = 'old')
+             &action = 'read', form = 'formatted', status = 'old')
         if (ios /= 0) then
            write(*,*) 'Failed to open!'
            stop
@@ -84,8 +84,7 @@ contains
         close(72)
 
         open(unit = 73, iostat = ios, file = 'wage_growth_hugr_notied_noselect.csv', &
-             action = 'read', form = 'formatted', &
-             & status = 'old')
+             &action = 'read', form = 'formatted', status = 'old')
         if (ios /= 0) then
            write(*,*) 'Failed to open!'
            stop
@@ -100,8 +99,7 @@ contains
         close(73)
         !_
         open(unit = 74, iostat = ios, file = 'wage_growth_hhgr_notied_noselect.csv', &
-             action = 'read', form = 'formatted', &
-             & status = 'old')
+             action = 'read', form = 'formatted', status = 'old')
         if (ios /= 0) then
            write(*,*) 'Failed to open!'
            stop
@@ -121,7 +119,7 @@ contains
         !**************************************************************************
 
         open(unit = 75, iostat = ios, file ='profwage_log_u_notied_select.csv', &
-             action = 'read', form = 'formatted', status ='old')
+             & action = 'read', form = 'formatted', status ='old')
         if (ios /= 0) then
            write(*,*) 'Failed to open!'
            stop
@@ -135,7 +133,7 @@ contains
         close(75)
 
         open(unit = 76, iostat = ios, file ='profwage_log_h_notied_select.csv', &
-             action = 'read', form = 'formatted', status ='old')
+             & action = 'read', form = 'formatted', status ='old')
         if (ios /= 0) then
            write(*,*) 'Failed to open!'
            stop
@@ -150,7 +148,7 @@ contains
         close(76)
 
         open(unit = 71, iostat = ios, file = 'wage_growth_uugr_notied_select.csv', &
-             action = 'read', form = 'formatted', status = 'old')
+             & action = 'read', form = 'formatted', status = 'old')
         if (ios /= 0) then
            write(*,*) 'Failed to open!'
            stop
@@ -165,8 +163,8 @@ contains
         !write(*,*) 'uugr', uugr
         close(71)
 
-        open(unit = 72, iostat = ios, file = 'wage_growth_uhgr_notied_select.csv', &
-             action = 'read', form = 'formatted', status = 'old')
+        open(unit = 72, iostat = ios, file = 'wage_growth_uhgr_notied_select.csv', & 
+             & action = 'read', form = 'formatted', status = 'old')
         if (ios /= 0) then
            write(*,*) 'Failed to open!'
            stop
@@ -181,8 +179,7 @@ contains
         close(72)
 
         open(unit = 73, iostat = ios, file = 'wage_growth_hugr_notied_select.csv', &
-             action = 'read', form = 'formatted', &
-             & status = 'old')
+             & action = 'read', form = 'formatted', status = 'old')
         if (ios /= 0) then
            write(*,*) 'Failed to open!'
            stop
@@ -196,9 +193,8 @@ contains
         !write(*,*) 'hugr', hugr
         close(73)
 
-        open(unit = 74, iostat = ios, file = 'wage_growth_hhgr_notied_select.csv', &
-             action = 'read', form = 'formatted', &
-             & status = 'old')
+        open(unit = 74, iostat = ios, file = 'wage_growth_hhgr_notied_select.csv', & 
+             & action = 'read', form = 'formatted', status = 'old')
         if (ios /= 0) then
            write(*,*) 'Failed to open!'
            stop
@@ -223,8 +219,8 @@ contains
         !******************************************************************************
         !*****************wage profile for non selection adjusted**********************
         !******************************************************************************
-        open(unit = 75, iostat = ios, file ='profwage_log_u_tied_noselect.csv', &
-             action = 'read', form = 'formatted', status ='old')
+        open(unit = 75, iostat = ios, file ='profwage_log_u_tied_noselect.csv', & 
+             & action = 'read', form = 'formatted', status ='old')
         if (ios /= 0) then
            write(*,*) 'Failed to open!'
            stop
@@ -237,8 +233,8 @@ contains
         end do
         close(75)
 
-        open(unit = 76, iostat = ios, file ='profwage_log_h_tied_noselect.csv', &
-             action = 'read', form = 'formatted', status ='old')
+        open(unit = 76, iostat = ios, file ='profwage_log_h_tied_noselect.csv', & 
+             & action = 'read', form = 'formatted', status ='old')
         if (ios /= 0) then
            write(*,*) 'Failed to open!'
            stop
@@ -252,8 +248,8 @@ contains
         !write(*,*) 'hlogwage', hlogwage
         close(76)
 
-        open(unit = 71, iostat = ios, file = 'wage_growth_uugr_tied_noselect.csv', &
-             action = 'read', form = 'formatted', status = 'old')
+        open(unit = 71, iostat = ios, file = 'wage_growth_uugr_tied_noselect.csv', & 
+             & action = 'read', form = 'formatted', status = 'old')
         if (ios /= 0) then
            write(*,*) 'Failed to open!'
            stop
@@ -269,7 +265,7 @@ contains
         close(71)
 
         open(unit = 72, iostat = ios, file = 'wage_growth_uhgr_tied_noselect.csv', &
-             action = 'read', form = 'formatted', status = 'old')
+             & action = 'read', form = 'formatted', status = 'old')
         if (ios /= 0) then
            write(*,*) 'Failed to open!'
            stop
@@ -284,8 +280,7 @@ contains
         close(72)
 
         open(unit = 73, iostat = ios, file = 'wage_growth_hugr_tied_noselect.csv', &
-             action = 'read', form = 'formatted', &
-             & status = 'old')
+             & action = 'read', form = 'formatted', status = 'old')
         if (ios /= 0) then
            write(*,*) 'Failed to open!'
            stop
@@ -300,8 +295,7 @@ contains
         close(73)
 
         open(unit = 74, iostat = ios, file = 'wage_growth_hhgr_tied_noselect.csv', &
-             action = 'read', form = 'formatted', &
-             & status = 'old')
+             & action = 'read', form = 'formatted', status = 'old')
         if (ios /= 0) then
            write(*,*) 'Failed to open!'
            stop
@@ -321,7 +315,7 @@ contains
         !**************************************************************************
 
         open(unit = 75, iostat = ios, file ='profwage_log_u_tied_select.csv', &
-             action = 'read', form = 'formatted', status ='old')
+             & action = 'read', form = 'formatted', status ='old')
         if (ios /= 0) then
            write(*,*) 'Failed to open!'
            stop
@@ -335,7 +329,7 @@ contains
         close(75)
 
         open(unit = 76, iostat = ios, file ='profwage_log_h_tied_select.csv', &
-             action = 'read', form = 'formatted', status ='old')
+             &action = 'read', form = 'formatted', status ='old')
         if (ios /= 0) then
            write(*,*) 'Failed to open!'
            stop
@@ -349,8 +343,8 @@ contains
         !write(*,*) 'hlogwage', hlogwage
         close(76)
 
-        open(unit = 71, iostat = ios, file = 'wage_growth_uugr_tied_select.csv', &
-             action = 'read', form = 'formatted', status = 'old')
+        open(unit = 71, iostat = ios, file = 'wage_growth_uugr_tied_select.csv', & 
+             & action = 'read', form = 'formatted', status = 'old')
         if (ios /= 0) then
            write(*,*) 'Failed to open!'
            stop
@@ -365,8 +359,8 @@ contains
         !write(*,*) 'uugr', uugr
         close(71)
 
-        open(unit = 72, iostat = ios, file = 'wage_growth_uhgr_tied_select.csv', &
-             action = 'read', form = 'formatted', status = 'old')
+        open(unit = 72, iostat = ios, file = 'wage_growth_uhgr_tied_select.csv', & 
+             & action = 'read', form = 'formatted', status = 'old')
         if (ios /= 0) then
            write(*,*) 'Failed to open!'
            stop
@@ -381,8 +375,7 @@ contains
         close(72)
 
         open(unit = 73, iostat = ios, file = 'wage_growth_hugr_tied_select.csv', &
-             action = 'read', form = 'formatted', &
-             & status = 'old')
+             & action = 'read', form = 'formatted', status = 'old')
         if (ios /= 0) then
            write(*,*) 'Failed to open!'
            stop
@@ -397,8 +390,7 @@ contains
         close(73)
 
         open(unit = 74, iostat = ios, file = 'wage_growth_hhgr_tied_select.csv', &
-             action = 'read', form = 'formatted', &
-             & status = 'old')
+             & action = 'read', form = 'formatted', status = 'old')
         if (ios /= 0) then
            write(*,*) 'Failed to open!'
            stop

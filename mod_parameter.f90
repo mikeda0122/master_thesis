@@ -28,7 +28,7 @@ module mod_parameter
     real(8) :: p_onemgamc
     real(8) :: p_onemgamh
     real(8) :: p_beqk
-    real(8) :: p_avcons = 20000
+    real(8) :: p_avcons = 20000 
 
     real(8), parameter :: ror = 0.04d0
     !Spouse income coefficients
@@ -112,8 +112,8 @@ module mod_parameter
     real(8), parameter :: disabincometest = 3600.0_8 ! note that this is now a negative number
 
     !grids of W
-    integer(8) :: Wnum    = 30
-    integer(8) :: Wnint    = 15
+    integer(8) :: Wnum    = 10
+    integer(8) :: Wnint    = 5
     real(8) :: Wmax    = 60
     real(8) :: Wmin    = 3
     real(8) :: Wint    = 15
@@ -137,11 +137,11 @@ module mod_parameter
     real(8) :: Asint    = 80000
 
     ! grids of AIME
-    integer(8) :: AIMEnum  =  20
-    integer(8) :: bdplace =    10
-    integer(8) :: AIMEnint = 7
-    real(8) :: AIMEmax  = 43800
-    real(8) :: AIMEmin  =  2000
+    integer(8) :: AIMEnum  =  10
+    integer(8) :: bdplace =    5
+    integer(8) :: AIMEnint = 5
+    real(8) :: AIMEmax  = 42480
+    real(8) :: AIMEmin  =  1960
     real(8) :: AIMEint = 9000
 
     ! grids of Bi
@@ -215,20 +215,23 @@ module mod_parameter
     !real(8):: wwgts(1:7) = (/  0.000971781245, 0.05451558281, 0.4256072526, 0.8102646175, 0.4256072526, 0.05451558281, 0.000971781245 /)
     integer(8), parameter::  wnodenum = 5
     real(8):: pi
-    real(8):: rhow     = 0.977_8
+    real(8):: rhow     = 0.977
     real(8):: stderr = 0.12_8
 
-    integer(8) :: momnum = 69_8-30_8+1_8 !!momage2-momage+1
-    integer(8) :: simnum = 7000_8
-    integer(8) :: datanum = 3949_8
+    integer(8) :: momnum = 69-30+1 !!momage2-momage+1
+    integer(8) :: simnum = 7000
+    integer(8) :: datanum = 3949
+    integer(8) :: params_num = 7
     
     real(8) :: dpanish = -1.0_8
 
     integer(8) :: PrintSimMoments = 1_8
     integer(8) :: two_step = 0_8
     integer(8) :: French_weight = 0_8
-    integer(8) :: objective_part = 1_8
-    integer(8) :: job = 0_8
+    integer(8) :: estimation = 1_8
+    integer(8) :: job = 3_8
+    integer(8) :: objective_part=1_8
+    integer(8) :: init_iter
     
     !tiedwage
     integer(8) :: tiedwage = 1_8
@@ -236,5 +239,6 @@ module mod_parameter
     integer(8) :: select_adj = 1_8
     !earnings test
     integer(8) :: etest = 1_8
+
   end module mod_parameter
   

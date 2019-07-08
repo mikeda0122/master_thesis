@@ -94,7 +94,7 @@ contains
     integer(8) :: i
 
     AIMEstate(1:AIMEnint) = (/(AIMEmin+(i-1)*((AIMEint-AIMEmin)/(AIMEnint-1)), i=1,AIMEnint)/)
-    AIMEstate(AIMEnint+1:AIMEnum) = (/(AIMEint+i*(AIMEmax - AIMEint)/(AIMEnum-AIMEnint), i=1,AIMEnum-AIMEnint)/)
+    AIMEstate(AIMEnint+1:AIMEnum) = (/(AIMEint+i*(AIMEmax - AIMEint)/AIMEnint, i=1,AIMEnum-AIMEnint)/)
 
   end subroutine make_AIME
 

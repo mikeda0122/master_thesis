@@ -1,8 +1,6 @@
 module mod_gmm
-
-  use fgsl
-  use, intrinsic :: iso_c_binding
   
+  use nag_library, only : nag_wp
   use mod_setPoI
   use mod_parameter
   use mod_profwage
@@ -20,15 +18,16 @@ module mod_gmm
 
 contains
 
-  real(c_double) function gmm(params_ptr, x_ptr) bind(c)
+  subroutine gmm(n, params, obj, iuser, ruser)
 
-    type(c_ptr), value :: params_ptr, x_ptr
+    IMPLICIT NONE
+    real(KIND=nag_wp), intent(out) :: obj
+    integer, intent(in) :: n
+    
+    real(KIND=nag_wp), intent(inout) :: ruser(*)
+    real(KIND=nag_wp), intent(in) :: params(n)
 
-    type(fgsl_vector) :: vec
-    real(fgsl_double), pointer :: params(:)
-    integer(fgsl_int) :: p_status
-
-    !real(8), intent(out) :: gmm
+    integer, intent(inout) :: iuser(*)
 
     !real(8) :: p_conspref
     !real(8) :: p_gamc
@@ -91,7 +90,7 @@ contains
     real(8) :: simH(simnum, dieage-bornage+1), simAIME(simnum, dieage-bornage+1), &
                 & simP(simnum, dieage-bornage+1), simB(simnum, dieage-bornage+1)
 
-    real(8), allocatable :: temp_death(:)
+    !real(8), allocatable :: temp_death(:)
     real(8) :: temp_adata(simnum)
 
     real(8) :: data_mean_A(momage2-momage+1), data_median_A(momage2-momage+1)
@@ -109,11 +108,9 @@ contains
 
     real(8) :: AIMEstate(AIMEnum)
 
-    call fgsl_obj_c_ptr(vec, params_ptr)
-    p_status = fgsl_vector_align(params, vec)
+    INTRINSIC matmul
 
-    write(*,*) 'p_status', p_status
-    write(*,*) 'params scaled', params
+    write(*,*) 'params', params
     
     !************
     !****We use parameters of interest as global variable, which is not good. Any way to fix this?
@@ -124,12 +121,13 @@ contains
     !write(*,*) 'p_leispref', p_leispref
     !write(*,*) 'p_fixcost', p_fixcost
 
-    write(*,*) 'params unscaled', p_gamh, p_gamc, p_leispref,&
-         p_leisprefbad, p_fixcost, p_beta, p_bequest
+    write(*,*) 'params unscaled', p_gamh, p_gamc, p_leispref, p_leisprefbad, p_fixcost, p_beta, p_bequest
 
     if (p_leispref-p_fixcost-500.0_8<=0.0_8) then
+       write(*,*) 'leisure parameter is too low!!'
+!       read*
        !In this case, p_conspref is not defined.
-       gmm = 10000000000000000.0_8
+       obj = 10000000000000000.0_8
        return
     end if
     
@@ -205,6 +203,16 @@ contains
        close(22)
     end if
 
+    open(unit=23, file='mean_sim_data.csv')
+
+    do age = bornage, dieage-1, 1
+       indx = age - bornage + 1
+       write(23,*) mean_prof_A(indx)/1000000.0_8, ',', med_prof_A(indx)/1000000.0_8, &
+            ',', mean_prof_P_good(indx), ',', mean_prof_P_bad(indx), &
+            ',', mean_prof_H_work_good(indx), ',', mean_prof_H_work_bad(indx)
+    end do
+    close(23)
+
     do age = bornage, dieage, 1
        indx = age - bornage + 1
        if (mean_prof_H_good(indx)==0.0_8) then
@@ -212,10 +220,6 @@ contains
           mean_prof_H_bad(indx) = 1.0_8
        end if
     end do
-
-
-    !write(*,*) 'size', size(mean_prof_H_work_bad)
-    !write(*,*) 'momnum', momnum
 
     where (mean_prof_H_work_good(30-bornage+1:69-bornage+1)/=0.0_8)
        smoments(1:momnum,1) = log(mean_prof_H_work_good(30-bornage+1:69-bornage+1))
@@ -250,25 +254,22 @@ contains
           temp_part = matmul(transpose(part_dist), W_part)
           gmm_part_mat = matmul(temp_part, part_dist)
           obj_part(i,1) = gmm_part_mat(1,1)
+          !write(*,*) 'W_part', W_part(1,1), W_part(20,20)
+          !write(*,*) 'W', W(momnum*(i-1)+1, momnum*(i-1)+1), W(momnum*(i-1)+20, momnum*(i-1)+20)
        end do
        write(*,*) 'H_good, H_bad, P_good, P_bad, mean_A, median_A'
        write(*,*) obj_part
     end if
-
-    !********Compute distance and gmmective function
+    
+    !********Compute distance and gmm objective function
     distance = smoments - dmoments
 
     temp_mat = matmul(transpose(distance), W)
     gmm_mat = matmul(temp_mat, distance)
-    gmm = gmm_mat(1, 1)
+    obj = gmm_mat(1, 1)
 
-    write(*,*) 'gmm', gmm
-    write(1,'(i5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5, a, f18.5)') &
-          & 0_8, ',', params(1), ',', params(2), ',', params(3), ',', params(4), ',', &
-          & params(5), ',', params(6), ',', params(7), ',', gmm
+    write(*,*) 'objective function', obj
 
-    return
-  end function gmm
+  end subroutine gmm
 
 end module mod_gmm
-

@@ -1,60 +1,59 @@
 program main_run
 
-  use fgsl
+  use nag_library, only : nag_wp
   use mod_gmm
-  use mod_gmm_fortran
   use mod_parameter
-  use mod_GNU_min
-  
+  use mod_NAG_min
+  use mod_NAG_pd_sym_inverse
+
   implicit none
   
   real(8) :: min_val
   real(8) :: min_point(7)
   !real(8) :: intval(7) = (/0.615_8, 7.96_8, 3399.0_8, 202.0_8, 240.0_8, 1.04_8, 0.037_8/) !para(4) nonscaled
-  !real(fgsl_double) :: intval(7) = (/0.615_8, 7.96_8, 3399.0_8, 202.0_8, 240.0_8, 1.04_8, 0.031734_8/) !para(4) scaled
-  !***French's initial values for para(4)******************************************
-  !(/0.644163_8, 9.72825_8, 3580.03_8, 296.475_8, 286.139_8, 1.00974_8, 0.0368076_8/)
-  !*********************************************************************************
-  !0.67206167361224676        16.498844504811307        3476.4541276443719        475.00930223891373       63.564163317211642       0.96028182788239103        0.041099261528070556
-  !Scale the parameter
-  real(fgsl_double) :: intval(7) = (/6.44163_8, 9.72825_8, 3.58003_8, 2.96475_8, 2.86139_8, 10.0974_8, 3.68076_8/)
-  
+  !*********French's unscaled initial values for para(4)**************************
+  !p_gamh , p_gamc , p_leispref , p_leisureprefbad, p_fixcost , p_beta , p_bequest
+  !0.644163_8, 9.72825_8, 3580.03_8, 296.475_8, 286.139_8, 1.00974_8, 0.0368076_8
+  !*******************************************************************************
+
+  !French's "scaled" initial values for para(4)
+  real(KIND=nag_wp) :: intval(7)
+  real(KIND=nag_wp) :: rvec(7)
+  real(KIND=nag_wp) :: params_opt(7)
+  !real(KIND=nag_wp) :: intval(7) = (/6.44163_8, 9.72825_8, 3.58003_8, 2.96475_8, 2.86139_8, 10.0974_8, 3.68076_8/) 
+
   !real(8) :: intval(7) = (/0.533_8, 3.19_8, 3900.0_8, 196.0_8, 335.0_8, 0.981_8, 1.7_8/) !para(3) nonscaled
 
   !real(8) :: intval(7) = (/0.602_8, 3.78_8, 4889.0_8, 191.0_8, 1292.0_8, 0.985_8, 2.58_8/) !para(2) nonscaled
   !real(8) :: intval(7) = (/0.578_8, 3.34_8, 4466.0_8, 318.0_8, 1313.0_8, 0.992_8, 1.69_8/) !para(1) nonscaled
-  real(fgsl_double) :: step(7) = (/1.0_8, 1.0_8, 1.0_8, 1.0_8, 1.0_8, 1.0_8, 1.0_8/)
+  !real(fgsl_double) :: step(7) = (/0.01_8, 0.05_8, 30.0_8, 3.0_8, 10.0_8, 0.01_8, 0.005_8/)
+  !real(8) :: step(7) = (/0.01_8, 0.05_8, 30.0_8, 3.0_8, 10.0_8, 0.01_8, 0.005_8/)
 
-!  real(8) :: params(7) = (/0.77673828132009937_8, 9.5918935472321927_8, 2920.8505696517195_8,&
-!       & 315.65904124402346_8, 260.17418390956311_8, 1.0472725738546487_8, 0.055371049922975507_8 /)
-  real(8) :: params(7) = (/0.615_8, 7.96_8, 3399.0_8, 202.0_8, 240.0_8, 1.04_8, 0.031734_8/) !para(4) scaled
-  !real(8) :: params(7) = (/0.62724_8, 12.69022_8, 3438.64107_8, 597.27615_8, 473.10697_8, 0.99597_8, 0.09678_8/) !NAG estimation
-  !real(8) :: params(7) = (/0.63597_8, 10.0108_8, 3571.7_8, 300.42_8, 282.29_8, 1.02145_8, 0.034415_8/) !NAG estimation work hour only
-  !real(8) :: params(7) = (/0.63597_8, 9.0108_8, 3571.7_8, 300.42_8, 282.29_8, 1.02145_8, 0.034415_8/) !NAG estimation work hour only test
-  !real(8) :: params(7) = (/0.61264466586931654_8, 10.616139260090080_8, 3759.1216711752331_8, &
-  !     & 319.47257450681557_8, 340.44776342575203_8, 0.97389645467922641_8, 0.032998227238843705_8/) !GNU estimation obj fixed vinv
-  !real(8) :: params(7) = (/0.61659_8, 11.1457_8, 3639.7_8, &
-  !     & 667.91_8, 300.00_8, 0.99139_8, 0.027476_8/) !NAG estimation obj fixed vinv
-  !real(8) :: params(7) = (/0.60588_8, 9.4856_8, 3794.8_8, &
-  !     & 414.18_8, 378.56_8, 0.85442_8, 0.04381_8/) !NAG estimation our optimal weight
-  !real(8) :: params(7) = (/0.59234_8, 7.53270_8, 3364.1923_8, &
-  !     & 100.88084_8, 779.68345_8, 1.04_8, 0.07327_8/) !NAG estimation our optimal weight beta fixed
-  !real(8) :: params(7) = (/0.62508_8, 11.66046_8, 3692.21938_8, &
-  !     & 524.11445_8, 498.34624_8, 0.92460_8, 0.04741_8/) !NAG estimation obj fixed vinv
-  !real(8) :: params(7) = (/0.59736_8, 12.16975_8, 3863.91255_8, &
-  !     & 456.48423_8, 545.53936_8, 0.93422_8, 0.01613_8/) !NAG estimation optmum 2019/07/03
+  real(KIND=nag_wp) :: y
+  integer :: idummy(1)
+  real(KIND=nag_wp) :: rdummy(1)
   
-                                                  
+  real(8) :: a(4,4), ainv(4,4)
 
-  integer(fgsl_size_t) :: params_dimension
-  
-  real(8) :: y
-
-  integer(4) :: icount, num, ifault
+  character :: filename*128
+  integer(8) :: i
 
   call timestamp()
 
-  params_dimension = size(intval)
+
+  if (job==0_8) then
+!     open(unit=2, file='params/simulation_first_step_params.csv')
+     open(unit=2, file='params/simulation_params_French_4.csv') 
+!     open(unit=2,file='params/simulation_params_our_optimal.csv')
+!     open(unit=2,file='params/Estimation_results_vinv.csv')
+     read(2,*) intval(1:7)
+     close(2)
+  else if (job==1_8 .or. job==2_8 .or. job==3_8) then
+     open(unit=3, file='params/initial_params_French_4.csv') 
+     read(3,*) intval(1:7)
+     close(3)
+  end if
+
   
   write(*,*) '****************Output and Jobs****************'
   write(*,*) 'Print simulated moments to a csv file', PrintSimMoments
@@ -65,21 +64,19 @@ program main_run
   write(*,*) '****************Estimation**************************'
   write(*,*) 'This is a set of initial values:'
   write(*,*) intval
-  write(*,*) 'Units of change in each step of Estimation procedure:'
-  write(*,*) step
+  !write(*,*) 'Units of change in each step of Estimation procedure:'
+  !write(*,*) step
   write(*,*) ''
   write(*,*) ''
   
   write(*,*) '****************Model Settings****************'
-  write(*,*) 'dimension of parameters', params_dimension
+  write(*,*) 'dimension of parameters', size(intval)
   write(*,*) 'Tax type:', taxtype
   write(*,*) 'Liquidity dummy is', liquid
   write(*,*) 'Tied-wage is', tiedwage
   write(*,*) 'Wage adjustment for selection bias', select_adj
   write(*,*) 'Nonseparable utility function', nonsep
   write(*,*) 'Weight matrix is computed in two step', two_step
-  write(*,*) 'Existance of Earnings Test', etest
-  write(*,*) 'The age when earnings test ends', etstage
   write(*,*) ''
   write(*,*) ''
 
@@ -91,7 +88,7 @@ program main_run
   write(*,*) 'The number of C grids is', Cnum
   write(*,*) 'The number of obs in the simulation is ', simnum
   write(*,*) 'The number of obs in the data is ', datanum
-  write(*,*) 'The number of moments used is ', momnum*6
+  write(*,*) 'The number of moments used is ', momnum
   write(*,*) ''
   write(*,*) ''
 
@@ -101,31 +98,173 @@ program main_run
   write(*,*) ''
 
 
-  !!*********************************************************************
-  !!***********************Start Jobs from here**************************
-  !!**********************************************************************
-  
   if (job==0_8) then
-
-     y = gmm_fortran(params)
-
+     call gmm(size(intval), intval, y, idummy, rdummy)
      !write(*,*) 'The value of objective function is', y
-  else if(job==1_8) then     
+  else if(job==1_8) then
      write(*,*) 'Start Estimation procedure!!'
 
-     open(unit=1, file='estimation_log.csv')
-     write(1, '(A)') 'p_gamh , p_gamc , p_leispref , p_leisureprefbad, p_fixcost , p_beta , p_bequest , obj'
+     open(unit=10, file='params/init_params_French_4.csv')
+     write(10, '(A)') 'p_gamh , p_gamc , p_leispref , p_leisureprefbad, p_fixcost , p_beta , p_bequest , obj'
+     write(10,'(f10.5, a, f10.5, a, f10.5, a, f10.5, a, f10.5, a, f10.5, a, f10.5, &
+          & a, f10.5)') intval(1)/10.0_nag_wp, ',', intval(2), ',', intval(3)*1000_nag_wp, ',', intval(4)*100.0_nag_wp, ',', intval(5)*100.0_nag_wp, ',', intval(6)/10.0_nag_wp, ',', intval(7)/100.0_nag_wp
+     close(10)
 
-     !call nelmin(7, intval, min_point, min_val, 0.001_8, step, 3, 120, icount, num, ifault)
-     call GNU_NM_min(intval, step)
-     
-     close(1)
+     call NAG_min(intval)
+
+     init_iter = 2_8
+
+     open(unit=3, file='params/initial_params.csv') 
+     read(3,*) intval(1:7)
+     close(3)
+
+     intval(2) = intval(2) + 1.0_nag_wp
+
+     open(unit=10, file='params/init_params_2.csv')
+     write(10, '(A)') 'p_gamh , p_gamc , p_leispref , p_leisureprefbad, p_fixcost , p_beta , p_bequest , obj'
+     write(10,'(f10.5, a, f10.5, a, f10.5, a, f10.5, a, f10.5, a, f10.5, a, f10.5, &
+          & a, f10.5)') intval(1)/10.0_nag_wp, ',', intval(2), ',', intval(3)*1000_nag_wp, ',', intval(4)*100.0_nag_wp, ',', intval(5)*100.0_nag_wp, ',', intval(6)/10.0_nag_wp, ',', intval(7)/100.0_nag_wp
+     close(10)
+
+     call NAG_min(intval)
+
+     init_iter = 3_8
+
+     open(unit=3, file='params/initial_params.csv') 
+     read(3,*) intval(1:7)
+     close(3)
+
+     intval(3) = intval(3) + 1.0_nag_wp
+
+     open(unit=10, file='params/init_params_3.csv')
+     write(10, '(A)') 'p_gamh , p_gamc , p_leispref , p_leisureprefbad, p_fixcost , p_beta , p_bequest , obj'
+     write(10,'(f10.5, a, f10.5, a, f10.5, a, f10.5, a, f10.5, a, f10.5, a, f10.5, &
+          & a, f10.5)') intval(1)/10.0_nag_wp, ',', intval(2), ',', intval(3)*1000_nag_wp, ',', intval(4)*100.0_nag_wp, ',', intval(5)*100.0_nag_wp, ',', intval(6)/10.0_nag_wp, ',', intval(7)/100.0_nag_wp
+     close(10)
+
+     call NAG_min(intval)
+
+     init_iter = 4_8
+
+     open(unit=3, file='params/initial_params.csv') 
+     read(3,*) intval(1:7)
+     close(3)
+
+     intval(4) = intval(4) + 1.0_nag_wp
+
+     open(unit=10, file='params/init_params_4.csv')
+     write(10, '(A)') 'p_gamh , p_gamc , p_leispref , p_leisureprefbad, p_fixcost , p_beta , p_bequest , obj'
+     write(10,'(f10.5, a, f10.5, a, f10.5, a, f10.5, a, f10.5, a, f10.5, a, f10.5, &
+          & a, f10.5)') intval(1)/10.0_nag_wp, ',', intval(2), ',', intval(3)*1000_nag_wp, ',', intval(4)*100.0_nag_wp, ',', intval(5)*100.0_nag_wp, ',', intval(6)/10.0_nag_wp, ',', intval(7)/100.0_nag_wp
+     close(10)
+
+     call NAG_min(intval)
+
+     init_iter = 5_8
+
+     open(unit=3, file='params/initial_params.csv') 
+     read(3,*) intval(1:7)
+     close(3)
+
+     intval(5) = intval(5) + 1.0_nag_wp
+
+     open(unit=10, file='params/init_params_5.csv')
+     write(10, '(A)') 'p_gamh , p_gamc , p_leispref , p_leisureprefbad, p_fixcost , p_beta , p_bequest , obj'
+     write(10,'(f10.5, a, f10.5, a, f10.5, a, f10.5, a, f10.5, a, f10.5, a, f10.5, &
+          & a, f10.5)') intval(1)/10.0_nag_wp, ',', intval(2), ',', intval(3)*1000_nag_wp, ',', intval(4)*100.0_nag_wp, ',', intval(5)*100.0_nag_wp, ',', intval(6)/10.0_nag_wp, ',', intval(7)/100.0_nag_wp
+     close(10)
+
+     call NAG_min(intval)
+
+     init_iter = 6_8
+
+     open(unit=3, file='params/initial_params.csv') 
+     read(3,*) intval(1:7)
+     close(3)
+
+     intval(6) = intval(6) + 1.0_nag_wp
+
+     open(unit=10, file='params/init_params_6.csv')
+     write(10, '(A)') 'p_gamh , p_gamc , p_leispref , p_leisureprefbad, p_fixcost , p_beta , p_bequest , obj'
+     write(10,'(f10.5, a, f10.5, a, f10.5, a, f10.5, a, f10.5, a, f10.5, a, f10.5, &
+          & a, f10.5)') intval(1)/10.0_nag_wp, ',', intval(2), ',', intval(3)*1000_nag_wp, ',', intval(4)*100.0_nag_wp, ',', intval(5)*100.0_nag_wp, ',', intval(6)/10.0_nag_wp, ',', intval(7)/100.0_nag_wp
+     close(10)
+
+     call NAG_min(intval)
+
+     init_iter = 7_8
+
+     open(unit=3, file='params/initial_params.csv') 
+     read(3,*) intval(1:7)
+     close(3)
+
+     intval(7) = intval(7) + 1.0_nag_wp
+
+     open(unit=10, file='params/init_params_7.csv')
+     write(10, '(A)') 'p_gamh , p_gamc , p_leispref , p_leisureprefbad, p_fixcost , p_beta , p_bequest , obj'
+     write(10,'(f10.5, a, f10.5, a, f10.5, a, f10.5, a, f10.5, a, f10.5, a, f10.5, &
+          & a, f10.5)') intval(1)/10.0_nag_wp, ',', intval(2), ',', intval(3)*1000_nag_wp, ',', intval(4)*100.0_nag_wp, ',', intval(5)*100.0_nag_wp, ',', intval(6)/10.0_nag_wp, ',', intval(7)/100.0_nag_wp
+     close(10)
+
+     call NAG_min(intval)
+
+  else if(job==2_8) then     
+     write(*,*) 'Start the First Step of Estimation procedure!!'
+     write(*,*) ''
+     write(*,*) ''
+
+     call NAG_min(intval)
+
+     open(unit=3, file='params/first_step_params.csv')
+    read(3,*) params_opt
+     close(3)
+
+     write(*,*) 'Compute Optimal Weighting Matrix!!'
+     write(*,*) ''
+     write(*,*) ''
+     two_step = 1_8
+     call gmm(size(intval), params_opt, y, idummy, rdummy)
+
+     write(*,*) 'Start the Second Step of Estimation procedure!!'
+     write(*,*) ''
+     write(*,*) ''
+     two_step = 2_8
+     call NAG_min(intval)
+
+  else if (job==3_8) then
+     write(*,*) 'Start Estimation procedure!!'
+
+     do i = 1, 10
+
+        open(unit=3, file='params/initial_params_French_4.csv') 
+        read(3,*) intval(1:7)
+        close(3)
+
+        init_iter = i
+
+        write(filename, '("params/init_params_iter", i3.3, ".csv")') init_iter
+
+        call random_number(rvec)
+
+        rvec = (rvec -0.5_8)*2.0_8
+        intval = intval + rvec
+
+        open(unit=10, file=filename, status='replace')
+        write(10, '(A)') 'p_gamh , p_gamc , p_leispref , p_leisureprefbad, p_fixcost , p_beta , p_bequest , obj'
+        write(10,'(f10.5, a, f10.5, a, f10.5, a, f10.5, a, f10.5, a, f10.5, a, f10.5, &
+             & a, f10.5)') intval(1)/10.0_nag_wp, ',', intval(2), ',', intval(3)*1000_nag_wp, ',', intval(4)*100.0_nag_wp, ',', intval(5)*100.0_nag_wp, ',', intval(6)/10.0_nag_wp, ',', intval(7)/100.0_nag_wp
+        close(10)
+
+        call NAG_min(intval)
+
+     end do
   end if
   
+  write(*,*) 'start from 17 June 2019 5:15 PM'
   call timestamp()
 
 contains
-    subroutine timestamp ( )
+    subroutine timestamp ()
 
     !*****************************************************************************80
     !

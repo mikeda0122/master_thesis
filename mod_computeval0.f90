@@ -65,15 +65,14 @@ contains
 
     call ass(age, currentB, income, C, laborincome, A, ss, reduc, nextperiodassets)
 
-!    if (age==penage-1) then
-!       call computepenaccrue(age, ageshift, laborincome, penacc1)
-!       nextPIA = computePIA(nextperiodAIME)
-!       nextpenbenpred = predictpensionbenefits(nextPIA, penbensstart+1)
-!       penbenpred = predictpensionbenefits(PIA, penbensstart+1)
-!       penacc2 = nextpenbenpred - penbenpred
-!       penacc2=penacc2*gvec(age-bornage+1)
-!       nextperiodassets=nextperiodassets+penacc1-penacc2
-!    end if
+    call computepenaccrue(age, ageshift, laborincome, penacc1)
+    nextPIA = computePIA(nextperiodAIME)
+    nextpenbenpred = predictpensionbenefits(nextPIA, penbensstart+1)
+    penbenpred = predictpensionbenefits(PIA, penbensstart+1)
+    penacc2 = nextpenbenpred - penbenpred
+    penacc2=penacc2*gvec(age-bornage+1)
+    nextperiodassets=nextperiodassets+penacc1-penacc2
+
     utils = U(C, H, particip, M, nonsep)
 
     bequestutils = beq(nextperiodassets, nonsep)
@@ -164,7 +163,7 @@ contains
        write(*,*) 'H', H, 'particip', particip, 'currentB=', currentB
        write(*,*) 'M', M, 'nonsep', nonsep
        write(*,*) 'You are not supposed to be here!!'
-       read*
+!       read*
     end if
 
   end subroutine computeval0

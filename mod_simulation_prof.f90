@@ -67,6 +67,8 @@ contains
     integer(8) :: i, j, age, n
     integer(8) :: AIMEi, Wi, Ai, Bi
 
+    real(8) :: ind_data(simnum,momnum*3)
+
     n = size(A_dist)
 
     allocate(wshock_vector(n*(dieage-bornage+1_8)))
@@ -116,6 +118,9 @@ contains
     write(54, "(A)") "id, age, death, M, C, A, H, B, I, pb, ss"
     open(unit=55, file='wsim.csv')
     write(55, "(A)") "id, age, wage"
+    open(unit=56, file='ind_sim_data.csv')
+    open(unit=57, file='healsim.csv')
+    open(unit=58, file='deathsim.csv')
 
     do i = 1, n
 
@@ -149,11 +154,25 @@ contains
                & , ',', prof_I(age), ',', prof_pb(age), ',', prof_ss(age), ',', prof_AIME(age)
 
           write(55,'(i5, a, i2, a, f18.5)') i, ',', age+bornage-1, ',', prof_W(age)
+
        end do
+    end do
+
+    ind_data(:,1:momnum) = simH(:,1:momnum)
+    ind_data(:,momnum+1:momnum*2) = simP(:,1:momnum)
+    ind_data(:,momnum*2+1:momnum*3) = simA(:,1:momnum)/1000000.0_8
+
+    do i = 1, simnum
+       write(56,*) ind_data(i,1:momnum*3)
+       write(57,*) simhealth(i,1:momnum)
+       write(58,*) simdeath(i,1:momnum) 
     end do
 
     close(54)
     close(55)
+    close(56)
+    close(57)
+    close(58)
   end subroutine simulation_prof
 
   subroutine trac_lifecycle(A0, M0, W0, AIME0, id, numind, mortality_good, mortality_bad, &
@@ -260,8 +279,8 @@ contains
                 prof_P(age-bornage+1) = 0.0_8
              else if (prof_P(age-bornage+1) >= 0.5_8 ) then
                 prof_H(age-bornage+1) = interp(age-1, prvA, prvW, prvAIME, optH_good, Astate, Wstate,&
-                     & AIMEstate, Asnum, Wnum, AIMEnum, prvB)
-                prof_P(age-bornage+1)= 1.0_8
+                & AIMEstate, Asnum, Wnum, AIMEnum, prvB)
+                prof_P(age-bornage+1) = 1.0_8
              else
                 write(*,*) 'something is wrong with trac_lifecycle in mod_simulation_interp.f90'
                 write(*,*) prof_P(age-bornage+1)
@@ -355,16 +374,16 @@ contains
                    nextAIME = findAIME(nextPIA)
                 end if
 
-                !adjust next period assets based on pension accrue
-                call computepenaccrue(age, ageshift, laborincome, penacc1)
-                nextPIA = computePIA(nextAIME)
-                nextpenbenpred = predictpensionbenefits(nextPIA, penbensstart+1)
-                penbenpred = predictpensionbenefits(PIA, penbensstart+1)
-                penacc2 = nextpenbenpred - penbenpred
-                penacc2=penacc2*gvec(age + 1-bornage)
-                nextasset=nextasset+penacc1-penacc2
              end if
 
+             !adjust next period assets based on pension accrue
+             call computepenaccrue(age, ageshift, laborincome, penacc1)
+             nextPIA = computePIA(nextAIME)
+             nextpenbenpred = predictpensionbenefits(nextPIA, penbensstart+1)
+             penbenpred = predictpensionbenefits(PIA, penbensstart+1)
+             penacc2 = nextpenbenpred - penbenpred
+             penacc2=penacc2*gvec(age + 1-bornage)
+             nextasset=nextasset+penacc1-penacc2
 
              !Update prvW
              call nextwage(age, prvW, 0.0_8, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, wtpogood, wtpobad)
@@ -400,7 +419,7 @@ contains
                 prof_P(age-bornage+1) = 0.0_8
              else if (prof_P(age-bornage+1) >= 0.5_8) then
                 prof_H(age-bornage+1) = interp(age-1, prvA, prvW, prvAIME, optH_bad, Astate, Wstate, &
-                     & AIMEstate, Asnum, Wnum, AIMEnum, prvB)
+            & AIMEstate, Asnum, Wnum, AIMEnum, prvB)
                 prof_P(age-bornage+1) = 1.0_8
              else
                 write(*,*) 'something is wrong with trac_lifecycle in mod_simulation_interp.f90'
@@ -496,16 +515,16 @@ contains
                    call getnextPIA(tempnextPIA, earlyretirement, nextPIA)
                    nextAIME = findAIME(nextPIA)
                 end if
-
-                !adjust next period assets based on pension accrue
-                call computepenaccrue(age, ageshift, laborincome, penacc1)
-                nextPIA = computePIA(nextAIME)
-                nextpenbenpred = predictpensionbenefits(nextPIA, penbensstart+1)
-                penbenpred = predictpensionbenefits(PIA, penbensstart+1)
-                penacc2 = nextpenbenpred - penbenpred
-                penacc2=penacc2*gvec(age + 1-bornage)
-                nextasset=nextasset+penacc1-penacc2
              end if
+
+             !adjust next period assets based on pension accrue
+             call computepenaccrue(age, ageshift, laborincome, penacc1)
+             nextPIA = computePIA(nextAIME)
+             nextpenbenpred = predictpensionbenefits(nextPIA, penbensstart+1)
+             penbenpred = predictpensionbenefits(PIA, penbensstart+1)
+             penacc2 = nextpenbenpred - penbenpred
+             penacc2=penacc2*gvec(age + 1-bornage)
+             nextasset=nextasset+penacc1-penacc2
 
              !Update prvW
              call nextwage(age, prvW, 1.0_8, hlogwage, ulogwage, hhgr, hugr, uhgr, uugr, wtpogood, wtpobad)
